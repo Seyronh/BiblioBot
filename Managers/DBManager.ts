@@ -1,6 +1,6 @@
 import { DataBase } from "vectorcore";
 
-import { Book, BookWithEmbedding } from "../interfaces";
+import { Book } from "../interfaces";
 
 import { EmbeddingManager } from "./EmbeddingManager";
 import { Database as sqliteDatabase, SQLQueryBindings } from "bun:sqlite";
@@ -71,7 +71,13 @@ export class DBManager {
 		}
 		return DBManager.instance;
 	}
-	public async insertBook(book: BookWithEmbedding) {
+	public async getAllBooks(): Promise<Book[]> {
+		const books = await this.database.query("SELECT * FROM Libros");
+		return books.all().map((e) => {
+			return convertToBook(e);
+		});
+	}
+	public async insertBook(book: Book) {
 		this.database
 			.query(
 				`INSERT INTO Libros (Titulo, Autor, Generos, Paginas, Sinopsis, Imagen) VALUES ($title, $author, $genres, $paginas, $synopsis, $image)`
@@ -84,7 +90,11 @@ export class DBManager {
 				synopsis: book.Sinopsis,
 				image: arrayBufferToHex(book.Imagen),
 			} as any);
-		this.embeddingDatabase.addItem(book.embedding, {
+		const alltext = `Titulo: ${book.Titulo}\nSinopsis: ${book.Sinopsis}\nAutor: ${book.Autor}\nGeneros: ${book.Generos}\nPaginas: ${book.Paginas}`;
+		const embedding = await EmbeddingManager.getInstance().getPassageEmbedding(
+			alltext
+		);
+		this.embeddingDatabase.addItem(embedding, {
 			id: book.Titulo,
 			metadata: { title: book.Titulo },
 		});

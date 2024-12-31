@@ -1,5 +1,5 @@
 import { VectorGenerator, EmbeddingModel, VectorTypes } from "vectorcore";
-import { DBManager } from "./DBManager";
+
 export class EmbeddingManager {
 	private static instance: EmbeddingManager;
 	private embeddingModel: VectorGenerator = null;
@@ -22,5 +22,13 @@ export class EmbeddingManager {
 		if (!this.isInitialized()) return;
 
 		return await this.embeddingModel.generateVector(query, VectorTypes.Query);
+	}
+	public async getPassageEmbedding(passage: string): Promise<number[]> {
+		if (!this.isInitialized()) return;
+
+		return await this.embeddingModel.generateVector(
+			passage,
+			VectorTypes.Passage
+		);
 	}
 }

@@ -13,7 +13,7 @@ import {
 	AttachmentBuilder,
 	ButtonInteraction,
 } from "discord.js";
-import { Book, BookWithEmbedding, Command } from "../interfaces";
+import { Book, Command } from "../interfaces";
 import { canal_sugerencias } from "../config.json";
 import { bookembedhandle } from "../handlers/bookembed";
 import { DBManager } from "../Managers/DBManager";
@@ -210,17 +210,14 @@ const comando: Command = {
 				const response = await fetch(image);
 				const buffer = await response.arrayBuffer();
 				const paginas = parseInt(Message.embeds[0].fields[1].value);
-				const alltext = `Titulo: ${title}\nSinopsis: ${synopsis}\nAutor: ${author}\nGeneros: ${genres}\nPaginas: ${paginas}`;
-				const book: BookWithEmbedding = {
+
+				const book: Book = {
 					Titulo: title,
 					Autor: author,
 					Generos: genres.split(",").map((e) => e.trim()),
 					Paginas: paginas,
 					Sinopsis: synopsis,
 					Imagen: buffer,
-					embedding: await EmbeddingManager.getInstance().getQueryEmbedding(
-						alltext
-					),
 				};
 
 				// Insert the book in the database

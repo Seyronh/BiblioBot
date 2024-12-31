@@ -23,9 +23,7 @@ export interface Book {
 	Paginas: number;
 	Imagen?: ArrayBuffer;
 }
-export interface BookWithEmbedding extends Book {
-	embedding: number[];
-}
+
 export interface BookAutocomplete {
 	title: string;
 	_id: number;
