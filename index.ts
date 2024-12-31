@@ -33,4 +33,4 @@ client.on("interactionCreate", async (interaction: Interaction) => {
 	if (interaction.isStringSelectMenu()) selectmenuhandle(interaction);
 });
 
-client.login(config.discord_token);
+client.login(process.env.DISCORD_TOKEN);
