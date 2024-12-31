@@ -1,0 +1,38 @@
+import {
+	AutocompleteInteraction,
+	ButtonInteraction,
+	CommandInteraction,
+	ModalSubmitInteraction,
+	StringSelectMenuInteraction,
+	SlashCommandBuilder,
+} from "discord.js";
+
+export interface Command {
+	data: SlashCommandBuilder;
+	execute: (interaction: CommandInteraction) => Promise<void>;
+	autoComplete?: (interaction: AutocompleteInteraction) => Promise<void>;
+	buttons?: (interaction: ButtonInteraction) => Promise<void>;
+	modal?: (interaction: ModalSubmitInteraction) => Promise<void>;
+	selectMenu?: (interaction: StringSelectMenuInteraction) => Promise<void>;
+}
+export interface Book {
+	Titulo: string;
+	Sinopsis: string;
+	Autor: string;
+	Generos: string[];
+	Paginas: number;
+	Imagen?: ArrayBuffer;
+}
+export interface BookWithEmbedding extends Book {
+	embedding: number[];
+}
+export interface BookAutocomplete {
+	title: string;
+	_id: number;
+}
+
+export interface Perms {
+	create: boolean;
+	update: boolean;
+	delete: boolean;
+}
