@@ -51,7 +51,8 @@ const comando: Command = {
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
 		const candidatos = await db.getBooksNameAutocomplete(
-			interactionOptions.getFocused()
+			interactionOptions.getFocused(),
+			true
 		);
 		const mapeado = candidatos.map((candidato) => ({
 			name: candidato,

@@ -1,10 +1,9 @@
 import { MessageFlags, REST, SlashCommandBuilder, Routes } from "discord.js";
 import { Command } from "../interfaces";
 import { SlashManager } from "../Managers/SlashManager";
-import { discord_token } from "../config.json";
 import { PermManager } from "../Managers/PermManager";
 
-const rest = new REST().setToken(discord_token);
+const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 
 const comando: Command = {
 	data: new SlashCommandBuilder()

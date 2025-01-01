@@ -1,6 +1,3 @@
-import keep_alive from "./keep-alive.js"
-
-import config from "./config.json";
 import { autocompletehandle } from "./handlers/autocomplete";
 import { buttonshandle } from "./handlers/buttons";
 import { commandhandle } from "./handlers/command";
