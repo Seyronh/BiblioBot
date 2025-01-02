@@ -3,11 +3,9 @@ import { buttonshandle } from "./handlers/buttons";
 import { commandhandle } from "./handlers/command";
 import { Client, GatewayIntentBits, Interaction } from "discord.js";
 import { modalhandle } from "./handlers/modal";
-import { DBManager } from "./Managers/DBManager";
+
 import { BookEventManager } from "./Managers/BookEventManager";
 import { selectmenuhandle } from "./handlers/selectmenu";
-
-DBManager.getInstance();
 
 const client = new Client({
 	intents: [
