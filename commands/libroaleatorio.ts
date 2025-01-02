@@ -5,6 +5,7 @@ import {
 	ButtonInteraction,
 	ButtonStyle,
 	Channel,
+	MessageFlags,
 	SlashCommandBuilder,
 	TextChannel,
 } from "discord.js";
@@ -17,7 +18,6 @@ const comando: Command = {
 		.setName("libroaleatorio")
 		.setDescription("Muestra un libro aleatorio") as SlashCommandBuilder,
 	execute: async (interaction) => {
-		await interaction.deferReply();
 		const db = DBManager.getInstance();
 		const book = await db.getRandomBooks(1);
 		if (!book[0]) return;
@@ -43,7 +43,7 @@ const comando: Command = {
 			enprgroeso,
 			planeandoleer
 		);
-		await interaction.editReply({
+		await interaction.reply({
 			embeds: [embed],
 			files: [attachment],
 			components: [row],
@@ -60,7 +60,7 @@ const comando: Command = {
 			db.markasWishtoRead(interaction.user.id, title);
 			await interaction.reply({
 				content: "Libro marcado como planeando leer",
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			});
 		} else if (interaction.customId === "enprogreso") {
 			const channel: Channel = (await interaction.client.channels.fetch(
@@ -72,7 +72,7 @@ const comando: Command = {
 			db.markasReading(interaction.user.id, title);
 			await interaction.reply({
 				content: "Libro marcado como en progreso",
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			});
 		} else if (interaction.customId === "leido") {
 			const channel: Channel = (await interaction.client.channels.fetch(
@@ -84,7 +84,7 @@ const comando: Command = {
 			db.markasRead(interaction.user.id, title);
 			await interaction.reply({
 				content: "Libro marcado como leido",
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			});
 		}
 	},

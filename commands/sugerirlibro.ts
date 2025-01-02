@@ -45,14 +45,14 @@ const comando: Command = {
 		if (await DBManager.getInstance().existsBook(title)) {
 			await interaction.reply({
 				content: "Ya existe un libro con ese titulo",
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
 		if (!image.contentType || !image.contentType.startsWith("image/")) {
 			await interaction.reply({
 				content: "El archivo debe ser una imagen",
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
@@ -169,7 +169,7 @@ const comando: Command = {
 
 				await interaction2.reply({
 					content: "Gracias por tu sugerencia",
-					ephemeral: true,
+					flags: MessageFlags.Ephemeral,
 				});
 				const Channel = (await interaction2.client.channels.fetch(
 					canal_sugerencias

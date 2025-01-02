@@ -1,6 +1,7 @@
 import {
 	AutocompleteInteraction,
 	CommandInteractionOptionResolver,
+	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
 import { Command } from "../interfaces";
@@ -25,14 +26,14 @@ const comando: Command = {
 	execute: async (interaction) => {
 		if (!PermManager.getInstance().getPermissions(interaction.user.id).delete)
 			return;
-		await interaction.deferReply({ ephemeral: true });
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
 		const id = interactionOptions.getString("busqueda");
 		const book = await db.getBookByTitle(id);
 		if (!book) {
-			await interaction.editReply({
+			await interaction.reply({
 				content: "Libro no encontrado",
+				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
@@ -42,8 +43,9 @@ const comando: Command = {
 			`Libro eliminado por <${interaction.user.id}>`
 		);
 		await db.removeBook(id);
-		await interaction.editReply({
+		await interaction.reply({
 			content: "Libro eliminado correctamente",
+			flags: MessageFlags.Ephemeral,
 		});
 	},
 	autoComplete: async (interaction: AutocompleteInteraction) => {

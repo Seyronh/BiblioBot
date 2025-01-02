@@ -9,6 +9,7 @@ import {
 	Channel,
 	CommandInteractionOptionResolver,
 	EmbedBuilder,
+	MessageFlags,
 	SlashCommandBuilder,
 	StringSelectMenuBuilder,
 	StringSelectMenuComponent,
@@ -44,7 +45,7 @@ async function responder(
 	);
 
 	if (books.length == 0 && !eliminado) {
-		await interaction.editReply({
+		await interaction.reply({
 			content: `No tienes libros ${Estados[estado]}`,
 		});
 		return;
@@ -137,7 +138,6 @@ const comando: Command = {
 				.setAutocomplete(true)
 		) as SlashCommandBuilder,
 	execute: async (interaction) => {
-		await interaction.deferReply();
 		const db = DBManager.getInstance();
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
@@ -148,21 +148,24 @@ const comando: Command = {
 			.join("");
 		const estado = IndexEstados.indexOf(categorialista);
 		if (estado == -1) {
-			await interaction.editReply({
+			await interaction.reply({
 				content: "Categoria no encontrada",
+				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
 		if (!(await db.existsList(interaction.user.id))) {
-			await interaction.editReply({
+			await interaction.reply({
 				content: `No tienes libros ${Estados[estado]}`,
+				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
 		const books = await db.getList(interaction.user.id, 0, estado);
 		if (books.length == 0) {
-			await interaction.editReply({
+			await interaction.reply({
 				content: `No tienes libros ${Estados[estado]}`,
+				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
@@ -219,7 +222,7 @@ const comando: Command = {
 		const row2 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			Pagina
 		);
-		await interaction.editReply({
+		await interaction.reply({
 			embeds: [embed],
 			files: [attachment],
 			components: [row, row2],
@@ -265,7 +268,7 @@ const comando: Command = {
 				if (books.length == 0) {
 					await interaction.reply({
 						content: "No tienes libros " + partes[0],
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					});
 					return;
 				}
