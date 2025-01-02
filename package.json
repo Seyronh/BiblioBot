@@ -10,8 +10,8 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
+		"@libsql/client": "^0.14.0",
 		"@pinecone-database/pinecone": "^4.0.0",
-		"@sqlitecloud/drivers": "^1.0.354",
 		"discord.js": "^14.16.3"
 	},
 	"devDependencies": {

@@ -107,7 +107,7 @@ const comando: Command = {
 			const Message = await channel.messages.fetch(interaction.message.id);
 			const title = Message.embeds[0].title;
 			const db = DBManager.getInstance();
-			db.markasWishtoRead(interaction.user.id, title);
+			await db.markasWishtoRead(interaction.user.id, title);
 			await interaction.reply({
 				content: "Libro marcado como planeando leer",
 				ephemeral: true,
@@ -119,7 +119,7 @@ const comando: Command = {
 			const Message = await channel.messages.fetch(interaction.message.id);
 			const title = Message.embeds[0].title;
 			const db = DBManager.getInstance();
-			db.markasReading(interaction.user.id, title);
+			await db.markasReading(interaction.user.id, title);
 			await interaction.reply({
 				content: "Libro marcado como en progreso",
 				ephemeral: true,
@@ -131,7 +131,7 @@ const comando: Command = {
 			const Message = await channel.messages.fetch(interaction.message.id);
 			const title = Message.embeds[0].title;
 			const db = DBManager.getInstance();
-			db.markasRead(interaction.user.id, title);
+			await db.markasRead(interaction.user.id, title);
 			await interaction.reply({
 				content: "Libro marcado como leido",
 				ephemeral: true,

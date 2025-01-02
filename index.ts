@@ -6,6 +6,7 @@ import { modalhandle } from "./handlers/modal";
 
 import { BookEventManager } from "./Managers/BookEventManager";
 import { selectmenuhandle } from "./handlers/selectmenu";
+import { DBManager } from "./Managers/DBManager";
 
 const client = new Client({
 	intents: [

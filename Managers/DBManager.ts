@@ -12,6 +12,7 @@ export class DBManager {
 		}
 		return DBManager.instance;
 	}
+
 	public async getAllBooks(): Promise<Book[]> {
 		return await SqlManager.getInstance().getAllBooks();
 	}
@@ -71,11 +72,17 @@ export class DBManager {
 		}
 		return await SqlManager.getInstance().getBooksNameAutocomplete(title);
 	}
-	public async exitsList(userid: string, title: string) {
-		return await SqlManager.getInstance().existsList(userid, title);
+	public async existsListBook(userid: string, title: string) {
+		return await SqlManager.getInstance().existsListBook(
+			parseInt(userid),
+			title
+		);
+	}
+	public async existsList(userid: string) {
+		return await SqlManager.getInstance().existsList(userid);
 	}
 	public async unmark(userid: string, title: string) {
-		if (!this.exitsList(userid, title)) return;
+		if (!(await this.existsListBook(userid, title))) return;
 
 		await SqlManager.getInstance().unmark(userid, title);
 	}
@@ -83,21 +90,21 @@ export class DBManager {
 		await SqlManager.getInstance().insertMark(userid, title, estado);
 	}
 	public async markasRead(userid: string, title: string) {
-		if (!this.exitsList(userid, title)) {
+		if (!(await this.existsListBook(userid, title))) {
 			this.insertMark(userid, title, 0);
 			return;
 		}
 		await SqlManager.getInstance().markasRead(userid, title);
 	}
 	public async markasReading(userid: string, title: string) {
-		if (!this.exitsList(userid, title)) {
+		if (!(await this.existsListBook(userid, title))) {
 			this.insertMark(userid, title, 1);
 			return;
 		}
 		await SqlManager.getInstance().markasReading(userid, title);
 	}
 	public async markasWishtoRead(userid: string, title: string) {
-		if (!this.exitsList(userid, title)) {
+		if (!(await this.existsListBook(userid, title))) {
 			this.insertMark(userid, title, 2);
 			return;
 		}

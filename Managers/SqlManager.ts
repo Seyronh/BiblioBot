@@ -1,4 +1,4 @@
-import { Database } from "@sqlitecloud/drivers";
+import { Client, createClient } from "@libsql/client";
 
 import { maxLibrosPorPagina } from "../config.json";
 import { Book } from "../interfaces";
@@ -56,7 +56,7 @@ function arrayBufferToHex(arrayBuffer) {
 
 export class SqlManager {
 	private static instance: SqlManager;
-	private database: Database;
+	private database: Client;
 	public static getInstance(): SqlManager {
 		if (!SqlManager.instance) {
 			SqlManager.instance = new SqlManager();
@@ -64,52 +64,63 @@ export class SqlManager {
 		return SqlManager.instance;
 	}
 	public constructor() {
-		this.database = new Database({
-			connectionstring: process.env.SQLCLOUD_CONNECTION_STRING,
-			usewebsocket: false,
+		this.database = createClient({
+			url: process.env.TURSO_DB_URL,
+			authToken: process.env.TURSO_AUTH_TOKEN,
 		});
 	}
 	public async getAllBooks(): Promise<Book[]> {
-		const books = await this.database.sql`SELECT * FROM Libros`;
-
-		return books.map((e) => {
+		const books = await this.database.execute(`SELECT * FROM Libros`);
+		return books.rows.map((e) => {
 			return convertToBook(e);
 		});
 	}
 	public async insertBook(book: Book) {
-		await this.database
-			.sql`INSERT INTO Libros (Titulo, Autor, Generos, Paginas, Sinopsis, Imagen) VALUES (${
-			book.Titulo
-		}, ${book.Autor}, ${book.Generos.join(",")}, ${book.Paginas}, ${
-			book.Sinopsis
-		}, ${arrayBufferToHex(book.Imagen)})`;
+		await this.database.execute({
+			sql: `INSERT INTO Libros (Titulo, Autor, Generos, Paginas, Sinopsis, Imagen) VALUES (?, ?, ?, ?, ?, ?)`,
+			args: [
+				book.Titulo,
+				book.Autor,
+				book.Generos.join(","),
+				book.Paginas,
+				book.Sinopsis,
+				arrayBufferToHex(book.Imagen),
+			],
+		});
 		return;
 	}
 	public async getBookByTitle(titleinput: string): Promise<Book> {
 		const cache = SqlCache.getInstance().getBookByTitle(titleinput);
 		if (cache !== -1) return cache;
-		const books = await this.database.sql`
-			SELECT * FROM Libros WHERE Titulo = ${titleinput}
-		`;
-		if (!books[0]) return;
-		const book = convertToBook(books[0]);
+		const books = await this.database.execute({
+			sql: `SELECT * FROM Libros WHERE Titulo = ?`,
+			args: [titleinput],
+		});
+		if (!books.rows[0]) return;
+		const book = convertToBook(books.rows[0]);
 		SqlCache.getInstance().saveBookByTitle(titleinput, book);
 		return book;
 	}
 	public async existsBook(title: string): Promise<Boolean> {
-		const books = await this.database
-			.sql`SELECT 1 FROM Libros WHERE Titulo = ${title}`;
-		return books.length > 0;
+		const books = await this.database.execute({
+			sql: `SELECT Titulo FROM Libros WHERE Titulo = ?`,
+			args: [title],
+		});
+		return books.rows.length > 0;
 	}
 	public async removeBook(title: string) {
-		await this.database.sql`DELETE FROM Libros WHERE Titulo = ${title}`;
+		await this.database.execute({
+			sql: `DELETE FROM Libros WHERE Titulo = ?`,
+			args: [title],
+		});
 		return;
 	}
 	public async getRandomBooks(samples: number): Promise<Book[]> {
-		const books = await this.database.sql`
-			SELECT * FROM Libros ORDER BY RANDOM() LIMIT ${samples}
-		`;
-		return books.map((e) => {
+		const books = await this.database.execute({
+			sql: `SELECT * FROM Libros ORDER BY RANDOM() LIMIT ?`,
+			args: [samples],
+		});
+		return books.rows.map((e) => {
 			return convertToBook(e);
 		});
 	}
@@ -119,57 +130,85 @@ export class SqlManager {
 		let books;
 		if (title.trim() !== "") {
 			title = `%${title}%`;
-			books = await this.database
-				.sql`SELECT Titulo FROM Libros WHERE Titulo LIKE ${title} ORDER BY Titulo ASC LIMIT 25`;
+			books = await this.database.execute({
+				sql: `SELECT Titulo FROM Libros WHERE Titulo LIKE ? ORDER BY Titulo ASC LIMIT 25`,
+				args: [title],
+			});
 		} else {
-			books = await this.database
-				.sql`SELECT Titulo FROM Libros ORDER BY Titulo ASC LIMIT 25`;
+			books = await this.database.execute(
+				`SELECT Titulo FROM Libros ORDER BY Titulo ASC LIMIT 25`
+			);
 		}
-		const result = books.map((e) => {
+		const result = books.rows.map((e) => {
 			return e.Titulo;
 		});
 		SqlCache.getInstance().saveBooksNameAutocomplete(title, result);
 		return result;
 	}
-	public async existsList(userid: string, title: string) {
-		const listas = await this.database
-			.sql`SELECT 1 FROM Listas WHERE userID = ${userid} AND TituloLibro = ${title}`;
-		return listas.length > 0;
+	public async existsListBook(userid: number, title: string) {
+		const listas = await this.database.execute({
+			sql: `SELECT 1 FROM Listas WHERE userID = ? AND TituloLibro = ?`,
+			args: [userid, title],
+		});
+		return listas.rows.length > 0;
+	}
+	public async existsList(userid: string) {
+		const listas = await this.database.execute({
+			sql: `SELECT 1 FROM Listas WHERE userID = ?`,
+			args: [userid],
+		});
+		return listas.rows.length > 0;
 	}
 	public async unmark(userid: string, title: string) {
-		await this.database
-			.sql`DELETE FROM Listas WHERE userID = ${userid} AND TituloLibro = ${title}`;
+		await this.database.execute({
+			sql: `DELETE FROM Listas WHERE userID = ? AND TituloLibro = ?`,
+			args: [userid, title],
+		});
 
 		return;
 	}
 	public async insertMark(userid: string, title: string, estado: number) {
-		await this.database
-			.sql`INSERT INTO Listas (TituloLibro, userID, Estado) VALUES (${title}, ${userid}, ${estado})`;
-	}
-	public async markasRead(userid: string, title: string) {
-		await this.database
-			.sql`UPDATE Listas SET Estado = 0 WHERE userID = ${userid} AND TituloLibro = ${title}`;
-	}
-	public async markasReading(userid: string, title: string) {
-		await this.database
-			.sql`UPDATE Listas SET Estado = 1 WHERE userID = ${userid} AND TituloLibro = ${title}`;
-	}
-	public async markasWishtoRead(userid: string, title: string) {
-		await this.database
-			.sql`UPDATE Listas SET Estado = 2 WHERE userID = ${userid} AND TituloLibro = ${title}`;
-	}
-	public async getList(userid: string, offset: number, estado: number) {
-		const listas = await this.database.sql`
-			SELECT * FROM Listas WHERE userID = ${userid} AND Estado = ${estado} LIMIT ${maxLibrosPorPagina} OFFSET ${offset}
-		`;
-		return listas.map((e) => {
-			return e.TituloLibro;
+		await this.database.execute({
+			sql: `INSERT INTO Listas (TituloLibro, userID, Estado) VALUES (?, ?, ?)`,
+			args: [title, userid, estado],
 		});
 	}
+	public async markasRead(userid: string, title: string) {
+		await this.database.execute({
+			sql: `UPDATE Listas SET Estado = 0 WHERE userID = ? AND TituloLibro = ?`,
+			args: [userid, title],
+		});
+	}
+	public async markasReading(userid: string, title: string) {
+		await this.database.execute({
+			sql: `UPDATE Listas SET Estado = 1 WHERE userID = ? AND TituloLibro = ?`,
+			args: [userid, title],
+		});
+	}
+	public async markasWishtoRead(userid: string, title: string) {
+		await this.database.execute({
+			sql: `UPDATE Listas SET Estado = 2 WHERE userID = ? AND TituloLibro = ?`,
+			args: [userid, title],
+		});
+	}
+	public async getList(
+		userid: string,
+		offset: number,
+		estado: number
+	): Promise<string[]> {
+		const listas = await this.database.execute({
+			sql: `SELECT * FROM Listas WHERE userID = ? AND Estado = ? LIMIT ${maxLibrosPorPagina} OFFSET ${offset}`,
+			args: [userid, estado],
+		});
+		return listas.rows.map((e) => {
+			return e.TituloLibro;
+		}) as string[];
+	}
 	public async getListCount(userid: string, estado: number) {
-		const listas = await this.database.sql`
-			SELECT COUNT(*) FROM Listas WHERE userID = ${userid} AND Estado = ${estado}`;
-		console.log(listas);
-		return listas;
+		const listas = await this.database.execute({
+			sql: `SELECT COUNT(*) FROM Listas WHERE userID = ? AND Estado = ?`,
+			args: [userid, estado],
+		});
+		return listas.rows[0]["COUNT(*)"] as number;
 	}
 }

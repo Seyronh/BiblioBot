@@ -36,11 +36,13 @@ async function responder(
 	const footerSplited = footer.split(" | ");
 	if (footerSplited[2].trim().split(" ")[1] !== interaction.user.id) return;
 	const estado = IndexEstados.indexOf(type);
+
 	const books = await db.getList(
 		interaction.user.id,
 		pagina * maxLibrosPorPagina,
 		estado
 	);
+
 	if (books.length == 0 && !eliminado) {
 		await interaction.editReply({
 			content: `No tienes libros ${Estados[estado]}`,
@@ -56,6 +58,7 @@ async function responder(
 		return;
 	}
 	const totallibros = await db.getListCount(interaction.user.id, estado);
+
 	const paginastotal = Math.ceil(totallibros / maxLibrosPorPagina);
 	const paginastotalEmbed = parseInt(
 		footerSplited[1].trim().split(" ")[1].split("/")[1]
@@ -147,6 +150,12 @@ const comando: Command = {
 		if (estado == -1) {
 			await interaction.editReply({
 				content: "Categoria no encontrada",
+			});
+			return;
+		}
+		if (!(await db.existsList(interaction.user.id))) {
+			await interaction.editReply({
+				content: `No tienes libros ${Estados[estado]}`,
 			});
 			return;
 		}
@@ -251,6 +260,7 @@ const comando: Command = {
 			} else {
 				const estado = Estados.indexOf(partes[0]);
 				if (estado == -1) return;
+
 				const books = await db.getList(interaction.user.id, 0, estado);
 				if (books.length == 0) {
 					await interaction.reply({
@@ -262,7 +272,9 @@ const comando: Command = {
 				const tempEmbed = new EmbedBuilder(interaction.message.embeds[0]);
 				const footer = tempEmbed.data.footer.text;
 				const footerSplited = footer.split(" | ");
+
 				const totallibros = await db.getListCount(interaction.user.id, estado);
+
 				const paginastotal = Math.ceil(totallibros / maxLibrosPorPagina);
 				const paginastotalEmbed = parseInt(
 					footerSplited[1].trim().split(" ")[1].split("/")[1]

@@ -37,21 +37,22 @@ const comando: Command = {
 				.setRequired(true)
 		) as SlashCommandBuilder,
 	execute: async (interaction) => {
-		await interaction.deferReply();
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
 
 		const title = interactionOptions.getString("titulo").trim();
 		const image = interactionOptions.getAttachment("imagen");
-		if (DBManager.getInstance().existsBook(title)) {
-			await interaction.editReply({
+		if (await DBManager.getInstance().existsBook(title)) {
+			await interaction.reply({
 				content: "Ya existe un libro con ese titulo",
+				ephemeral: true,
 			});
 			return;
 		}
 		if (!image.contentType || !image.contentType.startsWith("image/")) {
-			await interaction.editReply({
+			await interaction.reply({
 				content: "El archivo debe ser una imagen",
+				ephemeral: true,
 			});
 			return;
 		}
