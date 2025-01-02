@@ -19,7 +19,6 @@ import { bookembedhandle } from "../handlers/bookembed";
 import { DBManager } from "../Managers/DBManager";
 import { BookEventManager } from "../Managers/BookEventManager";
 import { PermManager } from "../Managers/PermManager";
-import { EmbeddingManager } from "../Managers/EmbeddingManager";
 
 const comando: Command = {
 	data: new SlashCommandBuilder()
@@ -38,23 +37,21 @@ const comando: Command = {
 				.setRequired(true)
 		) as SlashCommandBuilder,
 	execute: async (interaction) => {
+		await interaction.deferReply();
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
 
 		const title = interactionOptions.getString("titulo").trim();
 		const image = interactionOptions.getAttachment("imagen");
-		/*
 		if (DBManager.getInstance().existsBook(title)) {
-			await interaction.reply({
+			await interaction.editReply({
 				content: "Ya existe un libro con ese titulo",
-				flags: MessageFlags.Ephemeral,
 			});
 			return;
-		}*/
+		}
 		if (!image.contentType || !image.contentType.startsWith("image/")) {
-			await interaction.reply({
+			await interaction.editReply({
 				content: "El archivo debe ser una imagen",
-				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}

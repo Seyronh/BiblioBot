@@ -8,6 +8,7 @@ const comando: Command = {
 		.setName("libroaleatorio")
 		.setDescription("Muestra un libro aleatorio") as SlashCommandBuilder,
 	execute: async (interaction) => {
+		await interaction.deferReply();
 		const db = DBManager.getInstance();
 		const book = await db.getRandomBooks(1);
 		if (!book[0]) return;
@@ -19,7 +20,7 @@ const comando: Command = {
 		const attachment = new AttachmentBuilder(imageBuffer, {
 			name: `imagen.jpg`,
 		});
-		await interaction.reply({
+		await interaction.editReply({
 			embeds: [embed],
 			files: [attachment],
 		});

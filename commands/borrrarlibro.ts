@@ -25,14 +25,14 @@ const comando: Command = {
 	execute: async (interaction) => {
 		if (!PermManager.getInstance().getPermissions(interaction.user.id).delete)
 			return;
+		await interaction.deferReply({ ephemeral: true });
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
 		const id = interactionOptions.getString("busqueda");
 		const book = await db.getBookByTitle(id);
 		if (!book) {
-			await interaction.reply({
+			await interaction.editReply({
 				content: "Libro no encontrado",
-				ephemeral: true,
 			});
 			return;
 		}
@@ -42,9 +42,8 @@ const comando: Command = {
 			`Libro eliminado por <${interaction.user.id}>`
 		);
 		await db.removeBook(id);
-		await interaction.reply({
+		await interaction.editReply({
 			content: "Libro eliminado correctamente",
-			ephemeral: true,
 		});
 	},
 	autoComplete: async (interaction: AutocompleteInteraction) => {

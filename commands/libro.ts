@@ -28,15 +28,15 @@ const comando: Command = {
 				.setAutocomplete(true)
 		) as SlashCommandBuilder,
 	execute: async (interaction) => {
+		await interaction.deferReply();
 		const db = DBManager.getInstance();
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
 		const id = interactionOptions.getString("busqueda");
 		const book = await db.getBookByTitle(id);
 		if (!book) {
-			await interaction.reply({
+			await interaction.editReply({
 				content: "Libro no encontrado",
-				ephemeral: true,
 			});
 			return;
 		}
@@ -65,7 +65,7 @@ const comando: Command = {
 			enprgroeso,
 			planeandoleer
 		);
-		await interaction.reply({
+		await interaction.editReply({
 			embeds: [embed],
 			files: [attachment],
 			components: [row],
@@ -89,13 +89,14 @@ const comando: Command = {
 			return;
 		}
 		const candidatos = await db.getBooksNameAutocomplete(busqueda, true);
-
 		const mapeado = candidatos.map((candidato) => ({
 			name: candidato,
 			value: candidato,
 		}));
-		// @ts-ignore
-		await interaction.respond(mapeado);
+		try {
+			// @ts-ignore
+			await interaction.respond(mapeado);
+		} catch (error) {}
 		return;
 	},
 	buttons: async (interaction: ButtonInteraction) => {

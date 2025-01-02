@@ -6,5 +6,6 @@
 	"desarrolladores": ["182866681520062465", "318801055024545802"],
 	"banned": [],
 	"maxPaginas": 25,
-	"maxLibrosPorPagina": 2
+	"maxLibrosPorPagina": 2,
+	"maxCacheSize": 100
 }

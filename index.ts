@@ -3,12 +3,10 @@ import { buttonshandle } from "./handlers/buttons";
 import { commandhandle } from "./handlers/command";
 import { Client, GatewayIntentBits, Interaction } from "discord.js";
 import { modalhandle } from "./handlers/modal";
-import { EmbeddingManager } from "./Managers/EmbeddingManager";
 import { DBManager } from "./Managers/DBManager";
 import { BookEventManager } from "./Managers/BookEventManager";
 import { selectmenuhandle } from "./handlers/selectmenu";
 
-EmbeddingManager.getInstance();
 DBManager.getInstance();
 
 const client = new Client({

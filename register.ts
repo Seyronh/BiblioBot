@@ -1,11 +1,11 @@
 import { REST, Routes } from "discord.js";
-import { discord_token } from "./config.json";
+
 import { SlashManager } from "./Managers/SlashManager";
 
 const slashManager = SlashManager.getInstance();
 
 const datos = slashManager.getCommandsJSON();
-const rest = new REST().setToken(discord_token);
+const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 
 // and deploy your commands!
 (async () => {

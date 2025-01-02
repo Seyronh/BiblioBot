@@ -36,15 +36,14 @@ async function responder(
 	const footerSplited = footer.split(" | ");
 	if (footerSplited[2].trim().split(" ")[1] !== interaction.user.id) return;
 	const estado = IndexEstados.indexOf(type);
-	const books = db.getList(
+	const books = await db.getList(
 		interaction.user.id,
 		pagina * maxLibrosPorPagina,
 		estado
 	);
 	if (books.length == 0 && !eliminado) {
-		await interaction.reply({
+		await interaction.editReply({
 			content: `No tienes libros ${Estados[estado]}`,
-			ephemeral: true,
 		});
 		return;
 	} else if (eliminado) {
@@ -56,7 +55,7 @@ async function responder(
 		});
 		return;
 	}
-	const totallibros = db.getListCount(interaction.user.id, estado);
+	const totallibros = await db.getListCount(interaction.user.id, estado);
 	const paginastotal = Math.ceil(totallibros / maxLibrosPorPagina);
 	const paginastotalEmbed = parseInt(
 		footerSplited[1].trim().split(" ")[1].split("/")[1]
@@ -135,6 +134,7 @@ const comando: Command = {
 				.setAutocomplete(true)
 		) as SlashCommandBuilder,
 	execute: async (interaction) => {
+		await interaction.deferReply();
 		const db = DBManager.getInstance();
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
@@ -145,17 +145,15 @@ const comando: Command = {
 			.join("");
 		const estado = IndexEstados.indexOf(categorialista);
 		if (estado == -1) {
-			await interaction.reply({
+			await interaction.editReply({
 				content: "Categoria no encontrada",
-				ephemeral: true,
 			});
 			return;
 		}
-		const books = db.getList(interaction.user.id, 0, estado);
+		const books = await db.getList(interaction.user.id, 0, estado);
 		if (books.length == 0) {
-			await interaction.reply({
+			await interaction.editReply({
 				content: `No tienes libros ${Estados[estado]}`,
-				ephemeral: true,
 			});
 			return;
 		}
@@ -165,7 +163,7 @@ const comando: Command = {
 		const attachment = new AttachmentBuilder(imageBuffer, {
 			name: `imagen.jpg`,
 		});
-		const totallibros = db.getListCount(interaction.user.id, estado);
+		const totallibros = await db.getListCount(interaction.user.id, estado);
 		const paginastotal = Math.ceil(totallibros / maxLibrosPorPagina);
 		const embed = bookembedhandle(
 			book,
@@ -212,7 +210,7 @@ const comando: Command = {
 		const row2 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			Pagina
 		);
-		await interaction.reply({
+		await interaction.editReply({
 			embeds: [embed],
 			files: [attachment],
 			components: [row, row2],
@@ -253,7 +251,7 @@ const comando: Command = {
 			} else {
 				const estado = Estados.indexOf(partes[0]);
 				if (estado == -1) return;
-				const books = db.getList(interaction.user.id, 0, estado);
+				const books = await db.getList(interaction.user.id, 0, estado);
 				if (books.length == 0) {
 					await interaction.reply({
 						content: "No tienes libros " + partes[0],
@@ -264,7 +262,7 @@ const comando: Command = {
 				const tempEmbed = new EmbedBuilder(interaction.message.embeds[0]);
 				const footer = tempEmbed.data.footer.text;
 				const footerSplited = footer.split(" | ");
-				const totallibros = db.getListCount(interaction.user.id, estado);
+				const totallibros = await db.getListCount(interaction.user.id, estado);
 				const paginastotal = Math.ceil(totallibros / maxLibrosPorPagina);
 				const paginastotalEmbed = parseInt(
 					footerSplited[1].trim().split(" ")[1].split("/")[1]
