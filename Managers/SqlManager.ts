@@ -64,7 +64,10 @@ export class SqlManager {
 		return SqlManager.instance;
 	}
 	public constructor() {
-		this.database = new Database(process.env.SQLCLOUD_CONNECTION_STRING);
+		this.database = new Database({
+			connectionstring: process.env.SQLCLOUD_CONNECTION_STRING,
+			usewebsocket: false,
+		});
 	}
 	public async getAllBooks(): Promise<Book[]> {
 		const books = await this.database.sql`SELECT * FROM Libros`;
