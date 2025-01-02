@@ -2,7 +2,8 @@ module.exports = {
 	apps: [
 		{
 			name: "BiblioBot",
-			script: "index.ts",
+			script: "bun",
+			args:"run start",
 			interpreter: "bun",
 		},
 	],
