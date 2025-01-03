@@ -61,10 +61,15 @@ const comando: Command = {
 			.setCustomId("libro|planeandoleer")
 			.setLabel("Planeando leer")
 			.setStyle(ButtonStyle.Secondary);
+		const similares = new ButtonBuilder()
+			.setCustomId("libro|similares")
+			.setLabel("Libros similares")
+			.setStyle(ButtonStyle.Danger);
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			leido,
 			enprgroeso,
 			planeandoleer
+			//similares
 		);
 		await interaction.editReply({
 			embeds: [embed],

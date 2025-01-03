@@ -1,4 +1,4 @@
-import { EmbedBuilder, AttachmentBuilder } from "discord.js";
+import { EmbedBuilder } from "discord.js";
 import { Book } from "../interfaces";
 
 export function bookembedhandle(book: Book, footer: string): EmbedBuilder {

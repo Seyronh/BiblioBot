@@ -5,10 +5,11 @@ import {
 	ModalSubmitInteraction,
 	StringSelectMenuInteraction,
 	SlashCommandBuilder,
+	ContextMenuCommandBuilder,
 } from "discord.js";
 
 export interface Command {
-	data: SlashCommandBuilder;
+	data: SlashCommandBuilder | ContextMenuCommandBuilder;
 	execute: (interaction: CommandInteraction) => Promise<void>;
 	autoComplete?: (interaction: AutocompleteInteraction) => Promise<void>;
 	buttons?: (interaction: ButtonInteraction) => Promise<void>;

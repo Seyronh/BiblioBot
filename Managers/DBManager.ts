@@ -33,11 +33,12 @@ export class DBManager {
 		book: Book,
 		excludedTitles: string[]
 	): Promise<Book[]> {
-		const similarTitles = await this.pineconemanager.query(book.Titulo, {
+		const alltext = `Titulo: ${book.Titulo}\nSinopsis: ${book.Sinopsis}\nAutor: ${book.Autor}\nGeneros: ${book.Generos}\nPaginas: ${book.Paginas}`;
+		const similarTitles = await this.pineconemanager.query(alltext, {
 			topK: 5,
 			includeMetadata: true,
 			filter: {
-				titulo: { $nin: excludedTitles },
+				titulo: { $nin: excludedTitles.concat([book.Titulo]) },
 			},
 		});
 		let similarbooks: Book[] = [];
@@ -59,12 +60,14 @@ export class DBManager {
 	}
 	public async getBooksNameAutocomplete(
 		title: string,
-		plaintext: boolean
+		plaintext: boolean,
+		limit?: number
 	): Promise<string[]> {
+		limit = limit ?? 25;
 		if (!plaintext) {
 			const titles = (
 				await this.pineconemanager.query(title, {
-					topK: 25,
+					topK: limit,
 					includeMetadata: true,
 				})
 			).matches.map((e) => e.metadata.titulo as string);
