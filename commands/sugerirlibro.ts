@@ -20,6 +20,8 @@ import { DBManager } from "../Managers/DBManager";
 import { BookEventManager } from "../Managers/BookEventManager";
 import { colaboradores as colaboradoresRolID } from "../config.json";
 
+const db = DBManager.getInstance();
+
 const comando: Command = {
 	data: new SlashCommandBuilder()
 		.setName("sugerirlibro")
@@ -204,6 +206,16 @@ const comando: Command = {
 			const Message = await Channel.messages.fetch(interaction.message.id);
 			if (Message.deletable) {
 				const title = Message.embeds[0].title;
+				const bookTest = await db.getBookByTitle(title);
+				if (bookTest) {
+					await interaction.reply({
+						content:
+							"Ya existe un libro con ese titulo, eliminado de sugerencias.",
+						flags: MessageFlags.Ephemeral,
+					});
+					await Message.delete();
+					return;
+				}
 				const author = Message.embeds[0].author.name;
 				const genres = Message.embeds[0].fields[0].value;
 				const synopsis = Message.embeds[0].description;
@@ -222,7 +234,6 @@ const comando: Command = {
 				};
 
 				// Insert the book in the database
-				const db = DBManager.getInstance();
 				await db.insertBook(book);
 				await Message.delete();
 				BookEventManager.getInstance().eventBook(
