@@ -20,7 +20,10 @@ export class SqlCache {
 		this.bookbytitle = new LRUCache(maxCacheSize);
 		this.booksnameautocomplete = new LRUCache(maxCacheSize);
 		this.exitsbook = new LRUCache(maxCacheSize);
+		this.List = new LRUCache(maxCacheSize);
+		this.existslist = new LRUCache(maxCacheSize);
 		this.ListCount = new LRUCache(maxCacheSize);
+		this.AllBooks = undefined;
 	}
 	getBookByTitle(titleinput: string): Book | undefined {
 		return this.bookbytitle.get(titleinput);
