@@ -44,7 +44,7 @@ const comando: Command = {
 
 		const title = interactionOptions.getString("titulo").trim();
 		const image = interactionOptions.getAttachment("imagen");
-		if (await DBManager.getInstance().existsBook(title)) {
+		if (await db.existsBook(title)) {
 			await interaction.reply({
 				content: "Ya existe un libro con ese titulo",
 				flags: MessageFlags.Ephemeral,
@@ -133,11 +133,12 @@ const comando: Command = {
 					);
 					if (paginas <= 0) throw new Error();
 				} catch (err) {
-					return interaction2.reply({
+					await interaction2.reply({
 						content:
 							"El numero de páginas debe ser un numero entero mayor que 0",
 						flags: MessageFlags.Ephemeral,
 					});
+					return;
 				}
 				const response = await fetch(image.url);
 				const buffer = await response.arrayBuffer();

@@ -73,14 +73,13 @@ export class DBManager {
 		return await this.sqlmanager.getBooksNameAutocomplete(title);
 	}
 	public async existsListBook(userid: string, title: string) {
-		return await this.sqlmanager.existsListBook(parseInt(userid), title);
+		return await this.sqlmanager.existsListBook(userid, title);
 	}
 	public async existsList(userid: string) {
 		return await this.sqlmanager.existsList(userid);
 	}
 	public async unmarkBook(userid: string, title: string) {
 		if (!(await this.existsListBook(userid, title))) return;
-
 		await this.sqlmanager.unmarkBook(userid, title);
 	}
 	public async markBook(userid: string, title: string, estado: number) {

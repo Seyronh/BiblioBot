@@ -13,34 +13,9 @@ import {
 import { Command } from "../interfaces";
 import { DBManager } from "../Managers/DBManager";
 import { bookembedhandle } from "../handlers/bookembed";
+import { handleBookInteraction } from "../handlers/handlebookinteraction";
 
 const db = DBManager.getInstance();
-
-const IndexEstados = ["leido", "enprogreso", "planeandoleer"];
-
-async function handleBookInteraction(
-	interaction: ButtonInteraction,
-	sucessMessage: string
-) {
-	const channel: TextChannel = (await interaction.client.channels.fetch(
-		interaction.channelId
-	)) as TextChannel;
-	const Message = await channel.messages.fetch(interaction.message.id);
-	const title = Message.embeds[0].title;
-	if (!title) {
-		await interaction.reply({
-			content: "Libro no encontrado",
-			flags: MessageFlags.Ephemeral,
-		});
-		return;
-	}
-	const state = IndexEstados.indexOf(title);
-	await db.markBook(interaction.user.id, title, state);
-	await interaction.reply({
-		content: sucessMessage,
-		flags: MessageFlags.Ephemeral,
-	});
-}
 
 const comando: Command = {
 	data: new SlashCommandBuilder()
@@ -54,12 +29,13 @@ const comando: Command = {
 				.setAutocomplete(true)
 		) as SlashCommandBuilder,
 	execute: async (interaction) => {
+		await interaction.deferReply();
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
 		const id = interactionOptions.getString("busqueda");
 		const book = await db.getBookByTitle(id);
 		if (!book) {
-			await interaction.reply({
+			await interaction.followUp({
 				content: "Libro no encontrado",
 				flags: MessageFlags.Ephemeral,
 			});
@@ -90,7 +66,7 @@ const comando: Command = {
 			enprgroeso,
 			planeandoleer
 		);
-		await interaction.reply({
+		await interaction.editReply({
 			embeds: [embed],
 			files: [attachment],
 			components: [row],

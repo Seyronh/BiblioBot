@@ -154,12 +154,16 @@ export class SqlManager {
 		dbcache.saveBooksNameAutocomplete(title, result);
 		return result;
 	}
-	public async existsListBook(userid: number, title: string) {
+	public async existsListBook(userid: string, title: string) {
+		const cache = dbcache.getExistsListBook(userid, title);
+		if (cache) return cache;
 		const listas = await this.database.execute({
 			sql: `SELECT 1 FROM Listas WHERE userID = ? AND TituloLibro = ?`,
 			args: [userid, title],
 		});
-		return listas.rows.length > 0;
+		const exists = listas.rows.length > 0;
+		dbcache.saveExistsListBook(userid, title, exists);
+		return exists;
 	}
 	public async existsList(userid: string) {
 		const cache = dbcache.getExistsList(userid);

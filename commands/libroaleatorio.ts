@@ -12,42 +12,24 @@ import {
 import { Command } from "../interfaces";
 import { DBManager } from "../Managers/DBManager";
 import { bookembedhandle } from "../handlers/bookembed";
+import { handleBookInteraction } from "../handlers/handlebookinteraction";
 
-const IndexEstados = ["leido", "enprogreso", "planeandoleer"];
 const db = DBManager.getInstance();
-
-async function handleBookInteraction(
-	interaction: ButtonInteraction,
-	sucessMessage: string
-) {
-	const channel: TextChannel = (await interaction.client.channels.fetch(
-		interaction.channelId
-	)) as TextChannel;
-	const Message = await channel.messages.fetch(interaction.message.id);
-	const title = Message.embeds[0].title;
-	if (!title) {
-		await interaction.reply({
-			content: "Libro no encontrado",
-			flags: MessageFlags.Ephemeral,
-		});
-		return;
-	}
-	const state = IndexEstados.indexOf(title);
-	await db.markBook(interaction.user.id, title, state);
-	await interaction.reply({
-		content: sucessMessage,
-		flags: MessageFlags.Ephemeral,
-	});
-}
 
 const comando: Command = {
 	data: new SlashCommandBuilder()
 		.setName("libroaleatorio")
 		.setDescription("Muestra un libro aleatorio") as SlashCommandBuilder,
 	execute: async (interaction) => {
-		const db = DBManager.getInstance();
+		await interaction.deferReply();
 		const book = await db.getRandomBooks(1);
-		if (!book[0]) return;
+		if (!book[0]) {
+			await interaction.followUp({
+				content: "No hay libros disponibles",
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
 		const embed = bookembedhandle(book[0], "Libro aleatorio");
 		const imageBuffer = Buffer.from(book[0].Imagen);
 		const attachment = new AttachmentBuilder(imageBuffer, {
@@ -70,7 +52,7 @@ const comando: Command = {
 			enprgroeso,
 			planeandoleer
 		);
-		await interaction.reply({
+		await interaction.editReply({
 			embeds: [embed],
 			files: [attachment],
 			components: [row],

@@ -7,5 +7,31 @@
 	"banned": [],
 	"maxPaginas": 25,
 	"maxLibrosPorPagina": 2,
-	"maxCacheSize": 100
+	"maxCacheSize": 100,
+	"generosDisponibles": [
+		"ficción",
+		"fantasía",
+		"negra",
+		"thriller",
+		"suspense",
+		"histórica",
+		"romance",
+		"ciencia ficción",
+		"distopía",
+		"aventuras",
+		"contemporáneo",
+		"terror",
+		"paranormal",
+		"poesía",
+		"juvenil",
+		"infantil",
+		"autoayuda",
+		"deporte",
+		"salud",
+		"manual",
+		"memorias",
+		"biografía",
+		"cocina",
+		"viajes"
+	]
 }

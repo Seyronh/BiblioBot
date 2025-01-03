@@ -9,6 +9,7 @@ export class SqlCache {
 	private existslist: LRUCache<string, boolean>;
 	private ListCount: LRUCache<string, number>;
 	private List: LRUCache<string, string[]>;
+	private existslistBook: LRUCache<string, boolean>;
 	private static instance: SqlCache;
 	public static getInstance(): SqlCache {
 		if (!SqlCache.instance) {
@@ -23,6 +24,7 @@ export class SqlCache {
 		this.List = new LRUCache(maxCacheSize);
 		this.existslist = new LRUCache(maxCacheSize);
 		this.ListCount = new LRUCache(maxCacheSize);
+		this.existslistBook = new LRUCache(maxCacheSize);
 		this.AllBooks = undefined;
 	}
 	getBookByTitle(titleinput: string): Book | undefined {
@@ -48,6 +50,12 @@ export class SqlCache {
 	}
 	saveExistsBook(title: string, exists: boolean): void {
 		this.exitsbook.put(title, exists);
+	}
+	getExistsListBook(userID: string, title: string): boolean | undefined {
+		return this.existslist.get(`${userID}|${title}`);
+	}
+	saveExistsListBook(userID: string, title: string, exists: boolean): void {
+		this.existslist.put(`${userID}|${title}`, exists);
 	}
 	getExistsList(userID: string): boolean | undefined {
 		return this.existslist.get(userID);
@@ -83,5 +91,6 @@ export class SqlCache {
 		this.existslist = new LRUCache(maxCacheSize);
 		this.ListCount = new LRUCache(maxCacheSize);
 		this.List = new LRUCache(maxCacheSize);
+		this.existslistBook = new LRUCache(maxCacheSize);
 	}
 }

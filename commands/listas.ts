@@ -45,12 +45,12 @@ async function responder(
 	);
 
 	if (books.length == 0 && !eliminado) {
-		await interaction.reply({
+		await interaction.editReply({
 			content: `No tienes libros ${Estados[estado]}`,
 		});
 		return;
 	} else if (eliminado) {
-		await interaction.update({
+		await interaction.editReply({
 			content: `Ya no te quedan libros ${Estados[estado]}`,
 			embeds: [],
 			components: [],
@@ -117,7 +117,7 @@ async function responder(
 	// @ts-ignore
 	row2.components[0] = selectmenu;
 
-	await interaction.update({
+	await interaction.editReply({
 		content: eliminado ? `Libro eliminado de la lista` : undefined,
 		embeds: [embednuevo],
 		files: [attachment],
@@ -138,6 +138,7 @@ const comando: Command = {
 				.setAutocomplete(true)
 		) as SlashCommandBuilder,
 	execute: async (interaction) => {
+		await interaction.deferReply();
 		const db = DBManager.getInstance();
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
@@ -148,22 +149,23 @@ const comando: Command = {
 			.join("");
 		const estado = IndexEstados.indexOf(categorialista);
 		if (estado == -1) {
-			await interaction.reply({
+			await interaction.followUp({
 				content: "Categoria no encontrada",
 				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
 		if (!(await db.existsList(interaction.user.id))) {
-			await interaction.reply({
+			await interaction.followUp({
 				content: `No tienes libros ${Estados[estado]}`,
 				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
 		const books = await db.getList(interaction.user.id, 0, estado);
+
 		if (books.length == 0) {
-			await interaction.reply({
+			await interaction.followUp({
 				content: `No tienes libros ${Estados[estado]}`,
 				flags: MessageFlags.Ephemeral,
 			});
@@ -222,7 +224,7 @@ const comando: Command = {
 		const row2 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			Pagina
 		);
-		await interaction.reply({
+		await interaction.editReply({
 			embeds: [embed],
 			files: [attachment],
 			components: [row, row2],
@@ -245,6 +247,7 @@ const comando: Command = {
 		await interaction.respond(mapeado);
 	},
 	buttons: async (interaction: ButtonInteraction) => {
+		await interaction.deferUpdate();
 		try {
 			const partes = interaction.customId.split("|");
 			if (partes[0] === "eliminarlista") {
@@ -258,7 +261,7 @@ const comando: Command = {
 				if (footerSplited[2].trim().split(" ")[1] !== interaction.user.id)
 					return;
 				const db = DBManager.getInstance();
-				db.unmarkBook(interaction.user.id, title);
+				await db.unmarkBook(interaction.user.id, title);
 				await responder(interaction, 0, 0, partes[1], true);
 			} else {
 				const estado = Estados.indexOf(partes[0]);
