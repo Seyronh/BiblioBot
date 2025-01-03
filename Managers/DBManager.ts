@@ -81,34 +81,13 @@ export class DBManager {
 	public async existsList(userid: string) {
 		return await SqlManager.getInstance().existsList(userid);
 	}
-	public async unmark(userid: string, title: string) {
+	public async unmarkBook(userid: string, title: string) {
 		if (!(await this.existsListBook(userid, title))) return;
 
-		await SqlManager.getInstance().unmark(userid, title);
+		await SqlManager.getInstance().unmarkBook(userid, title);
 	}
-	public async insertMark(userid: string, title: string, estado: number) {
-		await SqlManager.getInstance().insertMark(userid, title, estado);
-	}
-	public async markasRead(userid: string, title: string) {
-		if (!(await this.existsListBook(userid, title))) {
-			this.insertMark(userid, title, 0);
-			return;
-		}
-		await SqlManager.getInstance().markasRead(userid, title);
-	}
-	public async markasReading(userid: string, title: string) {
-		if (!(await this.existsListBook(userid, title))) {
-			this.insertMark(userid, title, 1);
-			return;
-		}
-		await SqlManager.getInstance().markasReading(userid, title);
-	}
-	public async markasWishtoRead(userid: string, title: string) {
-		if (!(await this.existsListBook(userid, title))) {
-			this.insertMark(userid, title, 2);
-			return;
-		}
-		await SqlManager.getInstance().markasWishtoRead(userid, title);
+	public async markBook(userid: string, title: string, estado: number) {
+		await SqlManager.getInstance().markBook(userid, title, estado);
 	}
 	public async getList(
 		userid: string,

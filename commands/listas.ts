@@ -258,7 +258,7 @@ const comando: Command = {
 				if (footerSplited[2].trim().split(" ")[1] !== interaction.user.id)
 					return;
 				const db = DBManager.getInstance();
-				db.unmark(interaction.user.id, title);
+				db.unmarkBook(interaction.user.id, title);
 				await responder(interaction, 0, 0, partes[1], true);
 			} else {
 				const estado = Estados.indexOf(partes[0]);

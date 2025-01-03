@@ -17,6 +17,32 @@ import { bookembedhandle } from "../handlers/bookembed";
 
 const db = DBManager.getInstance();
 
+const IndexEstados = ["leido", "enprogreso", "planeandoleer"];
+
+async function handleBookInteraction(
+	interaction: ButtonInteraction,
+	sucessMessage: string
+) {
+	const channel: TextChannel = (await interaction.client.channels.fetch(
+		interaction.channelId
+	)) as TextChannel;
+	const Message = await channel.messages.fetch(interaction.message.id);
+	const title = Message.embeds[0].title;
+	if (!title) {
+		await interaction.reply({
+			content: "Libro no encontrado",
+			flags: MessageFlags.Ephemeral,
+		});
+		return;
+	}
+	const state = IndexEstados.indexOf(title);
+	await db.markBook(interaction.user.id, title, state);
+	await interaction.reply({
+		content: sucessMessage,
+		flags: MessageFlags.Ephemeral,
+	});
+}
+
 const comando: Command = {
 	data: new SlashCommandBuilder()
 		.setName("libro")
@@ -76,20 +102,11 @@ const comando: Command = {
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
 		const busqueda = interactionOptions.getFocused();
-		if (busqueda.startsWith("d:")) {
-			const candidatos = await db.getBooksNameAutocomplete(
-				busqueda.substring(2),
-				false
-			);
-			const mapeado = candidatos.map((candidato) => ({
-				name: candidato,
-				value: candidato,
-			}));
-			// @ts-ignore
-			await interaction.respond(mapeado);
-			return;
-		}
-		const candidatos = await db.getBooksNameAutocomplete(busqueda, true);
+		const avanzada = busqueda.startsWith("d:");
+		const candidatos = await db.getBooksNameAutocomplete(
+			avanzada ? busqueda.substring(2) : busqueda,
+			avanzada
+		);
 		const mapeado = candidatos.map((candidato) => ({
 			name: candidato,
 			value: candidato,
@@ -102,41 +119,17 @@ const comando: Command = {
 	},
 	buttons: async (interaction: ButtonInteraction) => {
 		if (interaction.customId === "planeandoleer") {
-			const channel: Channel = (await interaction.client.channels.fetch(
-				interaction.channelId
-			)) as TextChannel;
-			const Message = await channel.messages.fetch(interaction.message.id);
-			const title = Message.embeds[0].title;
-			const db = DBManager.getInstance();
-			await db.markasWishtoRead(interaction.user.id, title);
-			await interaction.reply({
-				content: "Libro marcado como planeando leer",
-				flags: MessageFlags.Ephemeral,
-			});
+			await handleBookInteraction(
+				interaction,
+				"Libro marcado como planeando leer"
+			);
 		} else if (interaction.customId === "enprogreso") {
-			const channel: Channel = (await interaction.client.channels.fetch(
-				interaction.channelId
-			)) as TextChannel;
-			const Message = await channel.messages.fetch(interaction.message.id);
-			const title = Message.embeds[0].title;
-			const db = DBManager.getInstance();
-			await db.markasReading(interaction.user.id, title);
-			await interaction.reply({
-				content: "Libro marcado como en progreso",
-				flags: MessageFlags.Ephemeral,
-			});
+			await handleBookInteraction(
+				interaction,
+				"Libro marcado como en progreso"
+			);
 		} else if (interaction.customId === "leido") {
-			const channel: Channel = (await interaction.client.channels.fetch(
-				interaction.channelId
-			)) as TextChannel;
-			const Message = await channel.messages.fetch(interaction.message.id);
-			const title = Message.embeds[0].title;
-			const db = DBManager.getInstance();
-			await db.markasRead(interaction.user.id, title);
-			await interaction.reply({
-				content: "Libro marcado como leido",
-				flags: MessageFlags.Ephemeral,
-			});
+			await handleBookInteraction(interaction, "Libro marcado como leido");
 		}
 	},
 };

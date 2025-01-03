@@ -91,7 +91,7 @@ export class SqlManager {
 	}
 	public async getBookByTitle(titleinput: string): Promise<Book> {
 		const cache = SqlCache.getInstance().getBookByTitle(titleinput);
-		if (cache !== -1) return cache;
+		if (cache) return cache;
 		const books = await this.database.execute({
 			sql: `SELECT * FROM Libros WHERE Titulo = ?`,
 			args: [titleinput],
@@ -126,7 +126,7 @@ export class SqlManager {
 	}
 	public async getBooksNameAutocomplete(title: string): Promise<string[]> {
 		const cache = SqlCache.getInstance().getBooksNameAutocomplete(title);
-		if (cache !== -1) return cache;
+		if (cache) return cache;
 		let books;
 		if (title.trim() !== "") {
 			title = `%${title}%`;
@@ -159,7 +159,7 @@ export class SqlManager {
 		});
 		return listas.rows.length > 0;
 	}
-	public async unmark(userid: string, title: string) {
+	public async unmarkBook(userid: string, title: string) {
 		await this.database.execute({
 			sql: `DELETE FROM Listas WHERE userID = ? AND TituloLibro = ?`,
 			args: [userid, title],
@@ -167,29 +167,12 @@ export class SqlManager {
 
 		return;
 	}
-	public async insertMark(userid: string, title: string, estado: number) {
+	public async markBook(userid: string, title: string, estado: number) {
 		await this.database.execute({
-			sql: `INSERT INTO Listas (TituloLibro, userID, Estado) VALUES (?, ?, ?)`,
-			args: [title, userid, estado],
+			sql: `INSERT INTO Listas (userID, TituloLibro, Estado) VALUES (?, ?, ?) ON CONFLICT (userID, TituloLibro) DO UPDATE SET Estado = excluded.Estado`,
+			args: [userid, title, estado],
 		});
-	}
-	public async markasRead(userid: string, title: string) {
-		await this.database.execute({
-			sql: `UPDATE Listas SET Estado = 0 WHERE userID = ? AND TituloLibro = ?`,
-			args: [userid, title],
-		});
-	}
-	public async markasReading(userid: string, title: string) {
-		await this.database.execute({
-			sql: `UPDATE Listas SET Estado = 1 WHERE userID = ? AND TituloLibro = ?`,
-			args: [userid, title],
-		});
-	}
-	public async markasWishtoRead(userid: string, title: string) {
-		await this.database.execute({
-			sql: `UPDATE Listas SET Estado = 2 WHERE userID = ? AND TituloLibro = ?`,
-			args: [userid, title],
-		});
+		return;
 	}
 	public async getList(
 		userid: string,
