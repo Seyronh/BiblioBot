@@ -4,9 +4,7 @@
 	"description": "",
 	"main": "index.ts",
 	"scripts": {
-		"gitpull":"git pull",
-		"botstart": "bun run index.ts",
-		"start": "bun run gitpull && bun run botstart"
+		"start": "bun run index.ts"
 	},
 	"keywords": [],
 	"author": "",
