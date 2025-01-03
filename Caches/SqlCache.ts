@@ -1,38 +1,9 @@
 import { maxCacheSize } from "../config.json";
 import { Book } from "../interfaces";
-
-class LRUCache {
-	private capacity: number;
-	private cache: any[];
-	constructor(capacity) {
-		this.capacity = capacity;
-		this.cache = [];
-	}
-	get(key) {
-		const index = this.cache.findIndex((entry) => entry.key === key);
-
-		if (index === -1) {
-			return -1;
-		}
-		const item = this.cache.splice(index, 1)[0];
-		this.cache.push(item);
-		return item.value;
-	}
-	put(key, value) {
-		const index = this.cache.findIndex((entry) => entry.key === key);
-
-		if (index !== -1) {
-			this.cache.splice(index, 1);
-		} else if (this.cache.length >= this.capacity) {
-			this.cache.shift();
-		}
-		this.cache.push({ key, value });
-	}
-}
-
+import { LRUCache } from "./LRUCache";
 export class SqlCache {
-	private bookbytitle: LRUCache;
-	private booksnameautocomplete: LRUCache;
+	private bookbytitle: LRUCache<string, Book>;
+	private booksnameautocomplete: LRUCache<string, string[]>;
 	private static instance: SqlCache;
 	public static getInstance(): SqlCache {
 		if (!SqlCache.instance) {

@@ -1,42 +1,15 @@
 import { QueryOptions } from "@pinecone-database/pinecone";
-
+import { LRUCache } from "./LRUCache";
 import { maxCacheSize } from "../config.json";
-
-class LRUCache {
-	private capacity: number;
-	private cache: any[];
-	constructor(capacity) {
-		this.capacity = capacity;
-		this.cache = [];
-	}
-	get(key) {
-		const index = this.cache.findIndex((entry) => entry.key === key);
-
-		if (index === -1) {
-			return -1;
-		}
-		const item = this.cache.splice(index, 1)[0];
-		this.cache.push(item);
-		return item.value;
-	}
-	put(key, value) {
-		const index = this.cache.findIndex((entry) => entry.key === key);
-
-		if (index !== -1) {
-			this.cache.splice(index, 1);
-		} else if (this.cache.length >= this.capacity) {
-			this.cache.shift();
-		}
-		this.cache.push({ key, value });
-	}
-}
 
 export class PineconeCache {
 	public static instance: PineconeCache;
-	private embedQuerys: LRUCache = new LRUCache(maxCacheSize);
-	private embedPassages: LRUCache = new LRUCache(maxCacheSize);
-	private querys: LRUCache = new LRUCache(maxCacheSize);
-	private fetches: LRUCache = new LRUCache(maxCacheSize);
+	private embedQuerys: LRUCache<string, number[]> = new LRUCache(maxCacheSize);
+	private embedPassages: LRUCache<string, number[]> = new LRUCache(
+		maxCacheSize
+	);
+	private querys: LRUCache<string, any> = new LRUCache(maxCacheSize);
+	private fetches: LRUCache<string, any> = new LRUCache(maxCacheSize);
 	public static getInstance() {
 		if (!PineconeCache.instance) {
 			PineconeCache.instance = new PineconeCache();
