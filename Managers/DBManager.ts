@@ -12,7 +12,6 @@ export class DBManager {
 		}
 		return DBManager.instance;
 	}
-
 	public async getAllBooks(): Promise<Book[]> {
 		return await SqlManager.getInstance().getAllBooks();
 	}

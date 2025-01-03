@@ -6,9 +6,8 @@ import {
 } from "discord.js";
 import { Command } from "../interfaces";
 import { DBManager } from "../Managers/DBManager";
-
+import { moderadores as moderadoresRolID } from "../config.json";
 import { BookEventManager } from "../Managers/BookEventManager";
-import { PermManager } from "../Managers/PermManager";
 
 const db = DBManager.getInstance();
 
@@ -24,7 +23,12 @@ const comando: Command = {
 				.setAutocomplete(true)
 		) as SlashCommandBuilder,
 	execute: async (interaction) => {
-		if (!PermManager.getInstance().getPermissions(interaction.user.id).delete)
+		if (
+			//@ts-ignore
+			!interaction.member.roles.cache.some(
+				(role) => role.id == moderadoresRolID
+			)
+		)
 			return;
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;

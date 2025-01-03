@@ -16,11 +16,21 @@ export class LRUCache<K, V> {
 	}
 	put(key: K, value: V) {
 		if (this.cache.has(key)) {
-			this.cache.delete(key);
+			this.delete(key);
 		} else if (this.cache.size >= this.capacity) {
 			const oldestKey = this.cache.keys().next().value;
-			this.cache.delete(oldestKey);
+			this.delete(oldestKey);
 		}
 		this.cache.set(key, value);
+	}
+	delete(key: K) {
+		this.cache.delete(key);
+	}
+	deleteAll(key: RegExp) {
+		for (var prop in this.cache) {
+			if (key.test(prop)) {
+				delete this.cache[prop];
+			}
+		}
 	}
 }

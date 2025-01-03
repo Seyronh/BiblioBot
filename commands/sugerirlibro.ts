@@ -18,7 +18,7 @@ import { canal_sugerencias } from "../config.json";
 import { bookembedhandle } from "../handlers/bookembed";
 import { DBManager } from "../Managers/DBManager";
 import { BookEventManager } from "../Managers/BookEventManager";
-import { PermManager } from "../Managers/PermManager";
+import { colaboradores as colaboradoresRolID } from "../config.json";
 
 const comando: Command = {
 	data: new SlashCommandBuilder()
@@ -186,13 +186,16 @@ const comando: Command = {
 					});
 				}
 			})
-			.catch((err) => {
-				console.log(err);
-			});
+			.catch((err) => {});
 	},
 	buttons: async (interaction: ButtonInteraction) => {
-		const permsManager = PermManager.getInstance();
-		if (!permsManager.getPermissions(interaction.user.id).create) return;
+		if (
+			//@ts-ignore
+			!interaction.member.roles.cache.some(
+				(role) => role.id == colaboradoresRolID
+			)
+		)
+			return;
 		if (interaction.customId === "Confirm") {
 			// @ts-ignore
 			const Channel: Channel = (await interaction.client.channels.fetch(

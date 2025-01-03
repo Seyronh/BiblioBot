@@ -24,11 +24,6 @@ export interface Book {
 	Imagen?: ArrayBuffer;
 }
 
-export interface BookAutocomplete {
-	title: string;
-	_id: number;
-}
-
 export interface Perms {
 	create: boolean;
 	update: boolean;
