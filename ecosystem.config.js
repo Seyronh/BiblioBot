@@ -2,8 +2,7 @@ module.exports = {
 	apps: [
 		{
 			name: "BiblioBot",
-			script: "bun",
-			args:"run start",
+			script: "./index.ts",
 			interpreter: "bun",
 		},
 	],
