@@ -5,7 +5,6 @@ import {
 	ButtonBuilder,
 	ButtonInteraction,
 	ButtonStyle,
-	Channel,
 	CommandInteractionOptionResolver,
 	MessageFlags,
 	SlashCommandBuilder,

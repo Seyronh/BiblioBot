@@ -13,6 +13,33 @@ import { Command } from "../interfaces";
 import { DBManager } from "../Managers/DBManager";
 import { bookembedhandle } from "../handlers/bookembed";
 
+const IndexEstados = ["leido", "enprogreso", "planeandoleer"];
+const db = DBManager.getInstance();
+
+async function handleBookInteraction(
+	interaction: ButtonInteraction,
+	sucessMessage: string
+) {
+	const channel: TextChannel = (await interaction.client.channels.fetch(
+		interaction.channelId
+	)) as TextChannel;
+	const Message = await channel.messages.fetch(interaction.message.id);
+	const title = Message.embeds[0].title;
+	if (!title) {
+		await interaction.reply({
+			content: "Libro no encontrado",
+			flags: MessageFlags.Ephemeral,
+		});
+		return;
+	}
+	const state = IndexEstados.indexOf(title);
+	await db.markBook(interaction.user.id, title, state);
+	await interaction.reply({
+		content: sucessMessage,
+		flags: MessageFlags.Ephemeral,
+	});
+}
+
 const comando: Command = {
 	data: new SlashCommandBuilder()
 		.setName("libroaleatorio")
@@ -51,41 +78,11 @@ const comando: Command = {
 	},
 	buttons: async (interaction: ButtonInteraction) => {
 		if (interaction.customId === "planeandoleer") {
-			const channel: Channel = (await interaction.client.channels.fetch(
-				interaction.channelId
-			)) as TextChannel;
-			const Message = await channel.messages.fetch(interaction.message.id);
-			const title = Message.embeds[0].title;
-			const db = DBManager.getInstance();
-			db.markasWishtoRead(interaction.user.id, title);
-			await interaction.reply({
-				content: "Libro marcado como planeando leer",
-				flags: MessageFlags.Ephemeral,
-			});
+			handleBookInteraction(interaction, "Libro marcado como planeando leer");
 		} else if (interaction.customId === "enprogreso") {
-			const channel: Channel = (await interaction.client.channels.fetch(
-				interaction.channelId
-			)) as TextChannel;
-			const Message = await channel.messages.fetch(interaction.message.id);
-			const title = Message.embeds[0].title;
-			const db = DBManager.getInstance();
-			db.markasReading(interaction.user.id, title);
-			await interaction.reply({
-				content: "Libro marcado como en progreso",
-				flags: MessageFlags.Ephemeral,
-			});
+			handleBookInteraction(interaction, "Libro marcado como en progreso");
 		} else if (interaction.customId === "leido") {
-			const channel: Channel = (await interaction.client.channels.fetch(
-				interaction.channelId
-			)) as TextChannel;
-			const Message = await channel.messages.fetch(interaction.message.id);
-			const title = Message.embeds[0].title;
-			const db = DBManager.getInstance();
-			db.markasRead(interaction.user.id, title);
-			await interaction.reply({
-				content: "Libro marcado como leido",
-				flags: MessageFlags.Ephemeral,
-			});
+			handleBookInteraction(interaction, "Libro marcado como leido");
 		}
 	},
 };
