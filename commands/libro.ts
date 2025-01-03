@@ -54,15 +54,14 @@ const comando: Command = {
 				.setAutocomplete(true)
 		) as SlashCommandBuilder,
 	execute: async (interaction) => {
-		await interaction.deferReply();
-		const db = DBManager.getInstance();
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
 		const id = interactionOptions.getString("busqueda");
 		const book = await db.getBookByTitle(id);
 		if (!book) {
-			await interaction.editReply({
+			await interaction.reply({
 				content: "Libro no encontrado",
+				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
@@ -91,7 +90,7 @@ const comando: Command = {
 			enprgroeso,
 			planeandoleer
 		);
-		await interaction.editReply({
+		await interaction.reply({
 			embeds: [embed],
 			files: [attachment],
 			components: [row],
