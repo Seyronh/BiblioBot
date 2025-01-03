@@ -24,7 +24,7 @@ export class PineconeManager {
 	}
 	async embedPassage(text: string) {
 		const cacheResult = cache.embedPassage(text);
-		if (cacheResult !== -1) return cacheResult;
+		if (cacheResult) return cacheResult;
 		const results = (
 			await this.pinecone.inference.embed(process.env.PINECONE_MODEL, [text], {
 				inputType: "passage",
@@ -36,7 +36,7 @@ export class PineconeManager {
 	}
 	async embedQuery(text: string) {
 		const cacheResult = cache.embedQuery(text);
-		if (cacheResult !== -1) return cacheResult;
+		if (cacheResult) return cacheResult;
 		const results = (
 			await this.pinecone.inference.embed(process.env.PINECONE_MODEL, [text], {
 				inputType: "query",
@@ -58,7 +58,7 @@ export class PineconeManager {
 	}
 	async query(titulo: string, search: any) {
 		const cacheResult = cache.query(titulo, search);
-		if (cacheResult !== -1) return cacheResult;
+		if (cacheResult) return cacheResult;
 		search.vector = await this.embedQuery(titulo);
 		const results = await this.index
 			.namespace(process.env.PINECONE_NAMESPACE)
@@ -68,7 +68,7 @@ export class PineconeManager {
 	}
 	async fetch(title: string) {
 		const cacheResult = cache.fetch(title);
-		if (cacheResult !== -1) return cacheResult;
+		if (cacheResult) return cacheResult;
 		const results = await this.index.fetch([removeAccents(title)]);
 		cache.saveFetch(title, results);
 		return results;

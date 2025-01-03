@@ -5,7 +5,10 @@ import { SqlManager } from "./SqlManager";
 
 export class DBManager {
 	private static instance: DBManager;
+	private sqlmanager = SqlManager.getInstance();
+	private pineconemanager = PineconeManager.getInstance();
 	constructor() {}
+
 	public static getInstance(): DBManager {
 		if (!DBManager.instance) {
 			DBManager.instance = new DBManager();
@@ -13,32 +16,30 @@ export class DBManager {
 		return DBManager.instance;
 	}
 	public async getAllBooks(): Promise<Book[]> {
-		return await SqlManager.getInstance().getAllBooks();
+		return await this.sqlmanager.getAllBooks();
 	}
 	public async insertBook(book: Book) {
-		await SqlManager.getInstance().insertBook(book);
+		await this.sqlmanager.insertBook(book);
+		await this.pineconemanager.insertBook(book);
 		return;
 	}
 	public async existsBook(title: string): Promise<Boolean> {
-		return await SqlManager.getInstance().existsBook(title);
+		return await this.sqlmanager.existsBook(title);
 	}
 	public async getBookByTitle(titleinput: string): Promise<Book> {
-		return await SqlManager.getInstance().getBookByTitle(titleinput);
+		return await this.sqlmanager.getBookByTitle(titleinput);
 	}
 	public async getSimilarBooks(
 		book: Book,
 		excludedTitles: string[]
 	): Promise<Book[]> {
-		const similarTitles = await PineconeManager.getInstance().query(
-			book.Titulo,
-			{
-				topK: 5,
-				includeMetadata: true,
-				filter: {
-					titulo: { $nin: excludedTitles },
-				},
-			}
-		);
+		const similarTitles = await this.pineconemanager.query(book.Titulo, {
+			topK: 5,
+			includeMetadata: true,
+			filter: {
+				titulo: { $nin: excludedTitles },
+			},
+		});
 		let similarbooks: Book[] = [];
 		for (let i = 0; i < similarTitles.matches.length; i++) {
 			similarbooks.push(
@@ -48,13 +49,13 @@ export class DBManager {
 		return similarbooks;
 	}
 	public async removeBook(title: string) {
-		await PineconeManager.getInstance().delete(title);
-		await SqlManager.getInstance().removeBook(title);
+		await this.pineconemanager.delete(title);
+		await this.sqlmanager.removeBook(title);
 
 		return;
 	}
 	public async getRandomBooks(samples: number): Promise<Book[]> {
-		return await SqlManager.getInstance().getRandomBooks(samples);
+		return await this.sqlmanager.getRandomBooks(samples);
 	}
 	public async getBooksNameAutocomplete(
 		title: string,
@@ -62,40 +63,37 @@ export class DBManager {
 	): Promise<string[]> {
 		if (!plaintext) {
 			const titles = (
-				await PineconeManager.getInstance().query(title, {
+				await this.pineconemanager.query(title, {
 					topK: 25,
 					includeMetadata: true,
 				})
 			).matches.map((e) => e.metadata.titulo as string);
 			return titles;
 		}
-		return await SqlManager.getInstance().getBooksNameAutocomplete(title);
+		return await this.sqlmanager.getBooksNameAutocomplete(title);
 	}
 	public async existsListBook(userid: string, title: string) {
-		return await SqlManager.getInstance().existsListBook(
-			parseInt(userid),
-			title
-		);
+		return await this.sqlmanager.existsListBook(parseInt(userid), title);
 	}
 	public async existsList(userid: string) {
-		return await SqlManager.getInstance().existsList(userid);
+		return await this.sqlmanager.existsList(userid);
 	}
 	public async unmarkBook(userid: string, title: string) {
 		if (!(await this.existsListBook(userid, title))) return;
 
-		await SqlManager.getInstance().unmarkBook(userid, title);
+		await this.sqlmanager.unmarkBook(userid, title);
 	}
 	public async markBook(userid: string, title: string, estado: number) {
-		await SqlManager.getInstance().markBook(userid, title, estado);
+		await this.sqlmanager.markBook(userid, title, estado);
 	}
 	public async getList(
 		userid: string,
 		offset: number,
 		estado: number
 	): Promise<string[]> {
-		return await SqlManager.getInstance().getList(userid, offset, estado);
+		return await this.sqlmanager.getList(userid, offset, estado);
 	}
 	public async getListCount(userid: string, estado: number) {
-		return await SqlManager.getInstance().getListCount(userid, estado);
+		return await this.sqlmanager.getListCount(userid, estado);
 	}
 }

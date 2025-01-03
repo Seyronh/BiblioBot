@@ -103,7 +103,7 @@ const comando: Command = {
 		const avanzada = busqueda.startsWith("d:");
 		const candidatos = await db.getBooksNameAutocomplete(
 			avanzada ? busqueda.substring(2) : busqueda,
-			avanzada
+			!avanzada
 		);
 		const mapeado = candidatos.map((candidato) => ({
 			name: candidato,

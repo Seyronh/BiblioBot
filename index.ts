@@ -8,6 +8,8 @@ import { BookEventManager } from "./Managers/BookEventManager";
 import { selectmenuhandle } from "./handlers/selectmenu";
 import { DBManager } from "./Managers/DBManager";
 
+DBManager.getInstance(); //Init DBs
+
 const client = new Client({
 	intents: [
 		GatewayIntentBits.GuildMessages,
