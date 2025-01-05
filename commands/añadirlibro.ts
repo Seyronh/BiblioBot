@@ -24,7 +24,7 @@ const db = DBManager.getInstance();
 
 const comando: Command = {
 	data: new SlashCommandBuilder()
-		.setName("sugerirlibro")
+		.setName("añadirlibro")
 		.setDescription("Sugiere añadir un libro")
 		.addStringOption((option) =>
 			option
