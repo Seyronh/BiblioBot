@@ -93,7 +93,7 @@ export class SqlManager {
 				arrayBufferToHex(book.Imagen),
 			],
 		});
-		dbcache.updateCaches(book.Titulo);
+		dbcache.updateCachesInsert(book);
 		return;
 	}
 	public async getBookByTitle(titleinput: string): Promise<Book | undefined> {
@@ -128,7 +128,7 @@ export class SqlManager {
 			sql: `DELETE FROM Listas WHERE TituloLibro = ?`,
 			args: [title],
 		});
-		dbcache.updateCaches(title);
+		dbcache.updateCachesDelete(title);
 		return;
 	}
 	public async getRandomBooks(samples: number): Promise<Book[]> {
@@ -219,5 +219,68 @@ export class SqlManager {
 		const count = listas.rows[0]["COUNT(*)"] as number;
 		dbcache.saveListCount(userid, estado, count);
 		return count;
+	}
+	public async markPage(userid: string, title: string, pagina: number) {
+		await this.database.execute({
+			sql: `UPDATE Listas SET Pagina = ? WHERE userID = ? AND TituloLibro = ?`,
+			args: [pagina, userid, title],
+		});
+		dbcache.resetExistsList(userid);
+		return;
+	}
+	public async getPaginasLeidas(userid: string, title: string) {
+		const cache = dbcache.getPaginasLeidas(userid, title);
+		if (cache) return cache;
+		const listas = await this.database.execute({
+			sql: `SELECT Pagina FROM Listas WHERE userID = ? AND TituloLibro = ?`,
+			args: [userid, title],
+		});
+		const count = listas.rows[0]["Pagina"] as number;
+		dbcache.savePaginasLeidas(userid, title, count);
+		return count;
+	}
+	public async getNota(userid: string, title: string) {
+		const cache = dbcache.getNota(userid, title);
+		if (cache) return cache;
+		const listas = await this.database.execute({
+			sql: `SELECT Nota FROM Listas WHERE userID = ? AND TituloLibro = ?`,
+			args: [userid, title],
+		});
+		const count = listas.rows[0]["Nota"] as number;
+		dbcache.saveNota(userid, title, count);
+		return count;
+	}
+	public async setNota(userid: string, title: string, nota: number) {
+		await this.database.execute({
+			sql: `UPDATE Listas SET Nota = ? WHERE userID = ? AND TituloLibro = ?`,
+			args: [nota, userid, title],
+		});
+		dbcache.saveNota(userid, title, nota);
+		dbcache.resetNotaMedia(title);
+		return;
+	}
+	public async getNotaMedia(
+		title: string
+	): Promise<{ media: number; count: number }> {
+		const cache = dbcache.getNotaMedia(title);
+		if (cache) return cache;
+		const listas = await this.database.execute({
+			sql: `SELECT AVG(Nota), COUNT(Nota) FROM Listas WHERE TituloLibro = ?`,
+			args: [title],
+		});
+		const count = {
+			media: listas.rows[0]["AVG(Nota)"] as number,
+			count: listas.rows[0]["COUNT(Nota)"] as number,
+		};
+		dbcache.saveNotaMedia(title, count);
+		return count;
+	}
+	public async deleteNota(userid: string, title: string) {
+		await this.database.execute({
+			sql: `DELETE FROM Listas WHERE userID = ? AND TituloLibro = ?`,
+			args: [userid, title],
+		});
+		dbcache.deleteNota(userid, title);
+		return;
 	}
 }

@@ -100,7 +100,10 @@ async function responder(
 		book,
 		`Libro: ${libro + 1}/${books.length} | Pagina: ${
 			pagina + 1
-		}/${paginastotal}`
+		}/${paginastotal}`,
+		await db.getNotaMedia(book.Titulo),
+		await db.getPaginasLeidas(interaction.user.id, book.Titulo),
+		await db.getNota(interaction.user.id, book.Titulo)
 	);
 	const row2 = interaction.message.components[1];
 	const selectmenu = StringSelectMenuBuilder.from(
@@ -181,10 +184,13 @@ const comando: Command = {
 		const paginastotal = Math.ceil(totallibros / maxLibrosPorPagina);
 		const embed = bookembedhandle(
 			book,
-			`Libro: 1/${books.length} | Pagina: 1/${paginastotal} | userid: ${interaction.user.id}`
+			`Libro: 1/${books.length} | Pagina: 1/${paginastotal} | userid: ${interaction.user.id}`,
+			await db.getNotaMedia(book.Titulo),
+			await db.getPaginasLeidas(interaction.user.id, book.Titulo),
+			await db.getNota(interaction.user.id, book.Titulo)
 		);
 		const atras = new ButtonBuilder()
-			.setCustomId(`listas|${categorialista}|atras`)
+			.setCustomId(`${comando.data.name}|${categorialista}|atras`)
 			.setLabel("Anterior")
 			.setStyle(ButtonStyle.Secondary)
 			.setDisabled(true);
@@ -199,15 +205,15 @@ const comando: Command = {
 		}
 		paginas[0].setDefault(true);
 		const Pagina = new StringSelectMenuBuilder()
-			.setCustomId(`listas|${categorialista}|pagina`)
+			.setCustomId(`${comando.data.name}|${categorialista}|pagina`)
 			.setPlaceholder("Pagina")
 			.addOptions(...paginas);
 		const siguiente = new ButtonBuilder()
-			.setCustomId(`listas|${categorialista}|siguiente`)
+			.setCustomId(`${comando.data.name}|${categorialista}|siguiente`)
 			.setLabel("Siguiente")
 			.setStyle(ButtonStyle.Success);
 		const borrar = new ButtonBuilder()
-			.setCustomId(`listas|eliminarlista|${categorialista}`)
+			.setCustomId(`${comando.data.name}|eliminarlista|${categorialista}`)
 			.setLabel("Eliminar de la lista")
 			.setStyle(ButtonStyle.Danger);
 		if (totallibros == 1) {

@@ -39,7 +39,7 @@ export class BookEventManager {
 					embeds: [
 						bookembedhandle(
 							evento.book,
-							"Puedes buscar mas informacion sobre este libro con el comando /libro"
+							"Puedes buscar mas informacion sobre este libro con el comando /verlibro"
 						),
 					],
 					files: [attachment],

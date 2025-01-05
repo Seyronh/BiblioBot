@@ -30,21 +30,25 @@ const comando: Command = {
 			});
 			return;
 		}
-		const embed = bookembedhandle(book[0], "Libro aleatorio");
+		const embed = bookembedhandle(
+			book[0],
+			"Libro aleatorio",
+			await db.getNotaMedia(book[0].Titulo)
+		);
 		const imageBuffer = Buffer.from(book[0].Imagen);
 		const attachment = new AttachmentBuilder(imageBuffer, {
 			name: `imagen.jpg`,
 		});
 		const leido = new ButtonBuilder()
-			.setCustomId("libroaleatorio|leido")
+			.setCustomId(`${comando.data.name}|leido`)
 			.setLabel("Leido")
 			.setStyle(ButtonStyle.Success);
 		const enprgroeso = new ButtonBuilder()
-			.setCustomId("libroaleatorio|enprogreso")
+			.setCustomId(`${comando.data.name}|enprogreso`)
 			.setLabel("En progreso")
 			.setStyle(ButtonStyle.Primary);
 		const planeandoleer = new ButtonBuilder()
-			.setCustomId("libroaleatorio|planeandoleer")
+			.setCustomId(`${comando.data.name}|planeandoleer`)
 			.setLabel("Planeando leer")
 			.setStyle(ButtonStyle.Secondary);
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(

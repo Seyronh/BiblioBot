@@ -30,11 +30,11 @@ const comando: Command = {
 			2
 		);
 		const vermas = new ButtonBuilder()
-			.setCustomId(`analizar|vermas|${candidatos[0]}`)
+			.setCustomId(`${comando.data.name}|vermas|${candidatos[0]}`)
 			.setLabel("Ver más 1")
 			.setStyle(ButtonStyle.Primary);
 		const vermas2 = new ButtonBuilder()
-			.setCustomId(`analizar|vermas|${candidatos[1]}`)
+			.setCustomId(`${comando.data.name}|vermas|${candidatos[1]}`)
 			.setLabel("Ver más 2")
 			.setStyle(ButtonStyle.Primary);
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -55,7 +55,8 @@ const comando: Command = {
 			const book = await db.getBookByTitle(Titulo);
 			const embed = bookembedhandle(
 				book,
-				"para mas información usa el comando /libro"
+				"para mas información usa el comando /verlibro",
+				await db.getNotaMedia(book.Titulo)
 			);
 			const imageBuffer = Buffer.from(book.Imagen);
 			const attachment = new AttachmentBuilder(imageBuffer, {

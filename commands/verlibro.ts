@@ -8,7 +8,6 @@ import {
 	CommandInteractionOptionResolver,
 	MessageFlags,
 	SlashCommandBuilder,
-	TextChannel,
 } from "discord.js";
 import { Command } from "../interfaces";
 import { DBManager } from "../Managers/DBManager";
@@ -43,26 +42,29 @@ const comando: Command = {
 		}
 		const embed = bookembedhandle(
 			book,
-			"Puedes ayudar añadiendo libros con el comando /añadirlibro"
+			"Puedes ayudar añadiendo libros con el comando /añadirlibro",
+			await db.getNotaMedia(book.Titulo),
+			await db.getPaginasLeidas(interaction.user.id, book.Titulo),
+			await db.getNota(interaction.user.id, book.Titulo)
 		);
 		const imageBuffer = Buffer.from(book.Imagen);
 		const attachment = new AttachmentBuilder(imageBuffer, {
 			name: `imagen.jpg`,
 		});
 		const leido = new ButtonBuilder()
-			.setCustomId("libro|leido")
+			.setCustomId(`${comando.data.name}|leido`)
 			.setLabel("Leido")
 			.setStyle(ButtonStyle.Success);
 		const enprgroeso = new ButtonBuilder()
-			.setCustomId("libro|enprogreso")
+			.setCustomId(`${comando.data.name}|enprogreso`)
 			.setLabel("En progreso")
 			.setStyle(ButtonStyle.Primary);
 		const planeandoleer = new ButtonBuilder()
-			.setCustomId("libro|planeandoleer")
+			.setCustomId(`${comando.data.name}|planeandoleer`)
 			.setLabel("Planeando leer")
 			.setStyle(ButtonStyle.Secondary);
 		const similares = new ButtonBuilder()
-			.setCustomId("libro|similares")
+			.setCustomId(`${comando.data.name}|similares`)
 			.setLabel("Libros similares")
 			.setStyle(ButtonStyle.Danger);
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(

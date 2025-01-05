@@ -10,6 +10,9 @@ export class SqlCache {
 	private ListCount: LRUCache<string, number>;
 	private List: LRUCache<string, string[]>;
 	private existslistBook: LRUCache<string, boolean>;
+	private paginasLeidas: LRUCache<string, number>;
+	private nota: LRUCache<string, number>;
+	private notaMedia: LRUCache<string, { media: number; count: number }>;
 	private static instance: SqlCache;
 	public static getInstance(): SqlCache {
 		if (!SqlCache.instance) {
@@ -25,6 +28,9 @@ export class SqlCache {
 		this.existslist = new LRUCache(maxCacheSize);
 		this.ListCount = new LRUCache(maxCacheSize);
 		this.existslistBook = new LRUCache(maxCacheSize);
+		this.paginasLeidas = new LRUCache(maxCacheSize);
+		this.nota = new LRUCache(maxCacheSize);
+		this.notaMedia = new LRUCache(maxCacheSize);
 		this.AllBooks = undefined;
 	}
 	getBookByTitle(titleinput: string): Book | undefined {
@@ -52,10 +58,10 @@ export class SqlCache {
 		this.exitsbook.put(title, exists);
 	}
 	getExistsListBook(userID: string, title: string): boolean | undefined {
-		return this.existslist.get(`${userID}|${title}`);
+		return this.existslistBook.get(`${userID}|${title}`);
 	}
 	saveExistsListBook(userID: string, title: string, exists: boolean): void {
-		this.existslist.put(`${userID}|${title}`, exists);
+		this.existslistBook.put(`${userID}|${title}`, exists);
 	}
 	getExistsList(userID: string): boolean | undefined {
 		return this.existslist.get(userID);
@@ -83,14 +89,46 @@ export class SqlCache {
 	): void {
 		this.List.put(`${userid}|${offset}|${estado}`, list);
 	}
-	updateCaches(title: string): void {
+	getPaginasLeidas(userID: string, title: string): number {
+		return this.paginasLeidas.get(`${userID}|${title}`);
+	}
+	savePaginasLeidas(userID: string, title: string, count: number): void {
+		this.paginasLeidas.put(`${userID}|${title}`, count);
+	}
+	getNota(userID: string, title: string): number {
+		return this.nota.get(`${userID}|${title}`);
+	}
+	saveNota(userID: string, title: string, count: number): void {
+		this.nota.put(`${userID}|${title}`, count);
+	}
+	getNotaMedia(title: string): { media: number; count: number } | undefined {
+		return this.notaMedia.get(title);
+	}
+	saveNotaMedia(title: string, result: { media: number; count: number }): void {
+		this.notaMedia.put(title, result);
+	}
+	resetNotaMedia(title: string): void {
+		this.notaMedia.delete(title);
+	}
+	deleteNota(userid: string, title: string): void {
+		this.nota.delete(`${userid}|${title}`);
+		this.resetNotaMedia(title);
+	}
+	updateCachesInsert(book: Book): void {
+		if (this.AllBooks) this.AllBooks.push(book);
+	}
+	updateCachesDelete(title: string): void {
 		this.bookbytitle.delete(title);
 		this.booksnameautocomplete.delete(title);
 		this.exitsbook.delete(title);
-		this.AllBooks = null;
+		this.notaMedia.delete(title);
+		this.existslistBook.deleteAll(new RegExp(`\\|${title}$`));
+		this.paginasLeidas.deleteAll(new RegExp(`\\|${title}$`));
+		this.nota.deleteAll(new RegExp(`\\|${title}$`));
 		this.existslist = new LRUCache(maxCacheSize);
 		this.ListCount = new LRUCache(maxCacheSize);
 		this.List = new LRUCache(maxCacheSize);
-		this.existslistBook = new LRUCache(maxCacheSize);
+		if (this.AllBooks)
+			this.AllBooks = this.AllBooks.filter((book) => book.Titulo !== title);
 	}
 }

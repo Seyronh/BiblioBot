@@ -44,20 +44,6 @@ const comando: Command = {
 
 		const title = interactionOptions.getString("titulo").trim();
 		const image = interactionOptions.getAttachment("imagen");
-		if (await db.existsBook(title)) {
-			await interaction.reply({
-				content: "Ya existe un libro con ese titulo",
-				flags: MessageFlags.Ephemeral,
-			});
-			return;
-		}
-		if (!image.contentType || !image.contentType.startsWith("image/")) {
-			await interaction.reply({
-				content: "El archivo debe ser una imagen",
-				flags: MessageFlags.Ephemeral,
-			});
-			return;
-		}
 		const modal = new ModalBuilder()
 			.setTitle("Añadir libro")
 			.setCustomId("sugerirlibroModal");
@@ -116,13 +102,25 @@ const comando: Command = {
 		modal.addComponents(fifthRow, secondRow, fourthRow, firstRow);
 		// @ts-ignore
 		await interaction.showModal(modal);
-
 		const collectorFilter = (i) => {
 			return i.user.id === interaction.user.id;
 		};
 		interaction // @ts-ignore
 			.awaitModalSubmit({ time: 600_000, collectorFilter })
 			.then(async (interaction2) => {
+				interaction2.deferReply({ ephemeral: true });
+				if (await db.existsBook(title)) {
+					await interaction2.editReply({
+						content: "Ya existe un libro con ese titulo",
+					});
+					return;
+				}
+				if (!image.contentType || !image.contentType.startsWith("image/")) {
+					await interaction2.editReply({
+						content: "El archivo debe ser una imagen",
+					});
+					return;
+				}
 				const sinopsis = interaction2.fields.getTextInputValue("sinopsis");
 				const autor = interaction2.fields.getTextInputValue("autor");
 				const generos = interaction2.fields.getTextInputValue("generos");
@@ -133,10 +131,9 @@ const comando: Command = {
 					);
 					if (paginas <= 0) throw new Error();
 				} catch (err) {
-					await interaction2.reply({
+					await interaction2.editReply({
 						content:
 							"El numero de páginas debe ser un numero entero mayor que 0",
-						flags: MessageFlags.Ephemeral,
 					});
 					return;
 				}
@@ -154,14 +151,18 @@ const comando: Command = {
 				};
 				const embed = bookembedhandle(
 					book,
-					`Enviado por: ${interaction.user.tag} | ID:${interaction.user.id}`
+					`Enviado por: ${interaction.user.tag} | ID:${interaction.user.id}`,
+					{
+						media: -1,
+						count: 0,
+					}
 				);
 				const confirm = new ButtonBuilder()
-					.setCustomId("sugerirlibro|Confirm")
+					.setCustomId(`${comando.data.name}|Confirm`)
 					.setLabel("Confirmar")
 					.setStyle(ButtonStyle.Success);
 				const cancel = new ButtonBuilder()
-					.setCustomId("sugerirlibro|Cancel")
+					.setCustomId(`${comando.data.name}|Cancel`)
 					.setLabel("Cancelar")
 					.setStyle(ButtonStyle.Danger);
 
@@ -170,9 +171,8 @@ const comando: Command = {
 					confirm
 				);
 
-				await interaction2.reply({
+				await interaction2.editReply({
 					content: "Gracias por tu sugerencia",
-					flags: MessageFlags.Ephemeral,
 				});
 				const Channel = (await interaction2.client.channels.fetch(
 					canal_sugerencias

@@ -35,14 +35,14 @@ const comando: Command = {
 			});
 			return;
 		}
+		await interaction.deferReply({ ephemeral: true });
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
 		const id = interactionOptions.getString("busqueda");
 		const book = await db.getBookByTitle(id);
 		if (!book) {
-			await interaction.reply({
+			await interaction.editReply({
 				content: "Libro no encontrado",
-				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
@@ -52,9 +52,8 @@ const comando: Command = {
 			`Libro eliminado por <${interaction.user.id}>`
 		);
 		await db.removeBook(id);
-		await interaction.reply({
+		await interaction.editReply({
 			content: "Libro eliminado correctamente",
-			flags: MessageFlags.Ephemeral,
 		});
 	},
 	autoComplete: async (interaction: AutocompleteInteraction) => {

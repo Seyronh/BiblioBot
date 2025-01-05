@@ -88,6 +88,9 @@ export class DBManager {
 	public async markBook(userid: string, title: string, estado: number) {
 		await this.sqlmanager.markBook(userid, title, estado);
 	}
+	public async markPage(userid: string, title: string, pagina: number) {
+		await this.sqlmanager.markPage(userid, title, pagina);
+	}
 	public async getList(
 		userid: string,
 		offset: number,
@@ -97,5 +100,28 @@ export class DBManager {
 	}
 	public async getListCount(userid: string, estado: number) {
 		return await this.sqlmanager.getListCount(userid, estado);
+	}
+	public async getPaginasLeidas(userid: string, title: string) {
+		const result = await this.sqlmanager.getPaginasLeidas(userid, title);
+		if (result) return result;
+		return -1;
+	}
+	public async getNota(userid: string, title: string) {
+		const result = await this.sqlmanager.getNota(userid, title);
+		if (result) return result;
+		return -1;
+	}
+	public async getNotaMedia(
+		title: string
+	): Promise<{ media: number; count: number }> {
+		const result = await this.sqlmanager.getNotaMedia(title);
+		if (result) return result;
+		return { media: -1, count: 0 };
+	}
+	public async setNota(userid: string, title: string, nota: number) {
+		await this.sqlmanager.setNota(userid, title, nota);
+	}
+	public async deleteNota(userid: string, title: string) {
+		await this.sqlmanager.deleteNota(userid, title);
 	}
 }
