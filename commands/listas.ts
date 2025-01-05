@@ -129,7 +129,7 @@ const db = DBManager.getInstance();
 const comando: Command = {
 	data: new SlashCommandBuilder()
 		.setName("listas")
-		.setDescription("Muestra una lista de libros")
+		.setDescription("Muestra tus listas de libros")
 		.addStringOption((option) =>
 			option
 				.setName("categoria")

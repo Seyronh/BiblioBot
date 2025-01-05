@@ -25,7 +25,7 @@ const db = DBManager.getInstance();
 const comando: Command = {
 	data: new SlashCommandBuilder()
 		.setName("añadirlibro")
-		.setDescription("Sugiere añadir un libro")
+		.setDescription(" añadir un libro a la biblioteca")
 		.addStringOption((option) =>
 			option
 				.setName("titulo")
@@ -59,7 +59,7 @@ const comando: Command = {
 			return;
 		}
 		const modal = new ModalBuilder()
-			.setTitle("Sugerir libro")
+			.setTitle("Añadir libro")
 			.setCustomId("sugerirlibroModal");
 
 		const paginas = new TextInputBuilder()

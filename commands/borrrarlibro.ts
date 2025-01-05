@@ -28,8 +28,13 @@ const comando: Command = {
 			!interaction.member.roles.cache.some(
 				(role) => role.id == moderadoresRolID
 			)
-		)
+		) {
+			await interaction.reply({
+				content: "No tienes permiso para usar este comando",
+				flags: MessageFlags.Ephemeral,
+			});
 			return;
+		}
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
 		const id = interactionOptions.getString("busqueda");

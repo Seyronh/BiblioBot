@@ -20,7 +20,7 @@ const db = DBManager.getInstance();
 const comando: Command = {
 	data: new SlashCommandBuilder()
 		.setName("verlibro")
-		.setDescription("Muestra un libro en concreto")
+		.setDescription("Ver un libro en concreto")
 		.addStringOption((option) =>
 			option
 				.setName("busqueda")
@@ -43,7 +43,7 @@ const comando: Command = {
 		}
 		const embed = bookembedhandle(
 			book,
-			"Puedes ayudar añadiendo libros con el comando /sugerirlibro"
+			"Puedes ayudar añadiendo libros con el comando /añadirlibro"
 		);
 		const imageBuffer = Buffer.from(book.Imagen);
 		const attachment = new AttachmentBuilder(imageBuffer, {
