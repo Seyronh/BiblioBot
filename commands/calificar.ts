@@ -44,8 +44,9 @@ const comando: Command = {
 			});
 			return;
 		}
+
 		const nota = interactionOptions.getInteger("nota");
-		if (!nota) {
+		if (!nota && (await db.getNota(interaction.user.id, titulo)) != -1) {
 			await db.deleteNota(interaction.user.id, titulo);
 			await interaction.editReply({
 				content: "Nota borrada con exito",
