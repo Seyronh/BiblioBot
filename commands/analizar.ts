@@ -29,14 +29,8 @@ const comando: Command = {
 			false,
 			2
 		);
-		const vermas = new ButtonBuilder()
-			.setCustomId(`${comando.data.name}|vermas|${candidatos[0]}`)
-			.setLabel("Ver más 1")
-			.setStyle(ButtonStyle.Primary);
-		const vermas2 = new ButtonBuilder()
-			.setCustomId(`${comando.data.name}|vermas|${candidatos[1]}`)
-			.setLabel("Ver más 2")
-			.setStyle(ButtonStyle.Primary);
+		const vermas = createButton(candidatos[0], 1);
+		const vermas2 = createButton(candidatos[1], 2);
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			vermas,
 			vermas2
@@ -71,3 +65,11 @@ const comando: Command = {
 	},
 };
 export default comando;
+
+// Function to create a button with dynamic label and ID
+function createButton(candidate: string, index: number) {
+	return new ButtonBuilder()
+		.setCustomId(`${comando.data.name}|vermas|${candidate}`)
+		.setLabel(`Ver más ${index}`)
+		.setStyle(ButtonStyle.Primary);
+}

@@ -53,21 +53,10 @@ const comando: Command = {
 			});
 			return;
 		}
-		if (isNaN(nota)) {
+		const validationError = validateNota(nota);
+		if (validationError) {
 			await interaction.editReply({
-				content: "Nota no valida",
-			});
-			return;
-		}
-		if (nota < 0) {
-			await interaction.editReply({
-				content: "Nota no valida debe ser un numero positivo",
-			});
-			return;
-		}
-		if (nota > 10) {
-			await interaction.editReply({
-				content: "Nota no valida debe ser menor o igual que 10",
+				content: validationError,
 			});
 			return;
 		}
@@ -142,3 +131,17 @@ const comando: Command = {
 	},
 };
 export default comando;
+
+// Function to validate the nota input
+function validateNota(nota: number): string | null {
+	if (isNaN(nota)) {
+		return "Nota no valida";
+	}
+	if (nota < 0) {
+		return "Nota no valida debe ser un numero positivo";
+	}
+	if (nota > 10) {
+		return "Nota no valida debe ser menor o igual que 10";
+	}
+	return null;
+}
