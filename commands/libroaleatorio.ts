@@ -4,10 +4,8 @@ import {
 	ButtonBuilder,
 	ButtonInteraction,
 	ButtonStyle,
-	Channel,
 	MessageFlags,
 	SlashCommandBuilder,
-	TextChannel,
 } from "discord.js";
 import { Command } from "../interfaces";
 import { DBManager } from "../Managers/DBManager";
@@ -39,23 +37,7 @@ const comando: Command = {
 		const attachment = new AttachmentBuilder(imageBuffer, {
 			name: `imagen.jpg`,
 		});
-		const leido = new ButtonBuilder()
-			.setCustomId(`${comando.data.name}|leido`)
-			.setLabel("Leido")
-			.setStyle(ButtonStyle.Success);
-		const enprgroeso = new ButtonBuilder()
-			.setCustomId(`${comando.data.name}|enprogreso`)
-			.setLabel("En progreso")
-			.setStyle(ButtonStyle.Primary);
-		const planeandoleer = new ButtonBuilder()
-			.setCustomId(`${comando.data.name}|planeandoleer`)
-			.setLabel("Planeando leer")
-			.setStyle(ButtonStyle.Secondary);
-		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			leido,
-			enprgroeso,
-			planeandoleer
-		);
+		const row = createButtonRow(comando.data.name);
 		await interaction.editReply({
 			embeds: [embed],
 			files: [attachment],
@@ -73,3 +55,24 @@ const comando: Command = {
 	},
 };
 export default comando;
+
+// Function to create a row of buttons with dynamic labels and IDs
+function createButtonRow(commandName: string) {
+	const leido = new ButtonBuilder()
+		.setCustomId(`${commandName}|leido`)
+		.setLabel("Leido")
+		.setStyle(ButtonStyle.Success);
+	const enprogreso = new ButtonBuilder()
+		.setCustomId(`${commandName}|enprogreso`)
+		.setLabel("En progreso")
+		.setStyle(ButtonStyle.Primary);
+	const planeandoleer = new ButtonBuilder()
+		.setCustomId(`${commandName}|planeandoleer`)
+		.setLabel("Planeando leer")
+		.setStyle(ButtonStyle.Secondary);
+	return new ActionRowBuilder<ButtonBuilder>().addComponents(
+		leido,
+		enprogreso,
+		planeandoleer
+	);
+}

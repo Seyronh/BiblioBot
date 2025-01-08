@@ -23,12 +23,7 @@ const comando: Command = {
 				.setAutocomplete(true)
 		) as SlashCommandBuilder,
 	execute: async (interaction) => {
-		if (
-			//@ts-ignore
-			!interaction.member.roles.cache.some(
-				(role) => role.id == moderadoresRolID
-			)
-		) {
+		if (!hasRole(interaction, moderadoresRolID)) {
 			await interaction.reply({
 				content: "No tienes permiso para usar este comando",
 				flags: MessageFlags.Ephemeral,
@@ -72,3 +67,8 @@ const comando: Command = {
 	},
 };
 export default comando;
+
+// Function to check if the user has the required role
+function hasRole(interaction, roleId) {
+	return interaction.member.roles.cache.some((role) => role.id == roleId);
+}

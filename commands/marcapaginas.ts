@@ -45,21 +45,10 @@ const comando: Command = {
 			return;
 		}
 		const pagina = interactionOptions.getInteger("página");
-		if (isNaN(pagina)) {
+		const validationError = validatePagina(pagina, book.Paginas);
+		if (validationError) {
 			await interaction.editReply({
-				content: "Página no valida",
-			});
-			return;
-		}
-		if (pagina < 0) {
-			await interaction.editReply({
-				content: "Página no valida debe ser un numero positivo",
-			});
-			return;
-		}
-		if (pagina > book.Paginas) {
-			await interaction.editReply({
-				content: `Página no valida debe ser menor o igual que el total de paginas del libro en este caso ${book.Paginas} páginas`,
+				content: validationError,
 			});
 			return;
 		}
@@ -117,3 +106,17 @@ const comando: Command = {
 	},
 };
 export default comando;
+
+// Function to validate the pagina input
+function validatePagina(pagina: number, totalPaginas: number): string | null {
+	if (isNaN(pagina)) {
+		return "Página no valida";
+	}
+	if (pagina < 0) {
+		return "Página no valida debe ser un numero positivo";
+	}
+	if (pagina > totalPaginas) {
+		return `Página no valida debe ser menor o igual que el total de paginas del libro en este caso ${totalPaginas} páginas`;
+	}
+	return null;
+}

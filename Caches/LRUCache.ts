@@ -1,10 +1,13 @@
 export class LRUCache<K, V> {
 	private capacity: number;
 	private cache: Map<K, V>;
+
 	constructor(capacity: number) {
 		this.capacity = capacity;
 		this.cache = new Map<K, V>();
 	}
+
+	// Get the value associated with the key
 	get(key: K): V | undefined {
 		if (!this.cache.has(key)) {
 			return undefined;
@@ -14,6 +17,8 @@ export class LRUCache<K, V> {
 		this.cache.set(key, value);
 		return value;
 	}
+
+	// Put a key-value pair into the cache
 	put(key: K, value: V) {
 		if (this.cache.has(key)) {
 			this.delete(key);
@@ -23,13 +28,17 @@ export class LRUCache<K, V> {
 		}
 		this.cache.set(key, value);
 	}
+
+	// Delete a key-value pair from the cache
 	delete(key: K) {
 		this.cache.delete(key);
 	}
+
+	// Delete all key-value pairs that match the given regular expression
 	deleteAll(key: RegExp) {
-		for (var prop in this.cache) {
-			if (key.test(prop)) {
-				delete this.cache[prop];
+		for (const prop of this.cache.keys()) {
+			if (key.test(prop.toString())) {
+				this.cache.delete(prop);
 			}
 		}
 	}
