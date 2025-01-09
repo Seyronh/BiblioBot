@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { LRUCache } from "../caches/base_caches/LRUCache";
+import { LRUCache } from "../../caches/base_caches/LRUCache";
 
 describe("LRUCache", () => {
 	it("should return undefined for non-existent keys", () => {

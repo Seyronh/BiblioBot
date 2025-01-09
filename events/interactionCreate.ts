@@ -10,10 +10,22 @@ import { Event } from "../types";
 const event: Event = {
 	name: Events.InteractionCreate,
 	async execute(interaction) {
-		if (interaction.isCommand()) commandhandle(interaction);
-		if (interaction.isAutocomplete()) autocompletehandle(interaction);
-		if (interaction.isButton()) buttonshandle(interaction);
-		if (interaction.isStringSelectMenu()) selectmenuhandle(interaction);
+		if (interaction.isCommand()) {
+			commandhandle(interaction);
+			return;
+		}
+		if (interaction.isAutocomplete()) {
+			autocompletehandle(interaction);
+			return;
+		}
+		if (interaction.isButton()) {
+			buttonshandle(interaction);
+			return;
+		}
+		if (interaction.isStringSelectMenu()) {
+			selectmenuhandle(interaction);
+			return;
+		}
 	},
 };
 export default event;

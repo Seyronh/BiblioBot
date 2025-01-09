@@ -1,7 +1,11 @@
-import { describe, it, expect } from "bun:test";
-import { PineconeCache } from "../caches/PineconeCache";
+import { describe, it, expect, beforeEach } from "bun:test";
+import { PineconeCache } from "../../caches";
 
 describe("PineconeCache", () => {
+	beforeEach(() => {
+		// @ts-ignore
+		PineconeCache.instance = undefined;
+	});
 	it("should return undefined for non-existent embedQuery", () => {
 		const cache = PineconeCache.getInstance();
 		expect(cache.embedQuery("non-existent")).toBeUndefined();

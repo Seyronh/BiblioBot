@@ -2,4 +2,3 @@ node_modules
 .env
 register.ts
 bun.lockb
-pnpm-lock.yaml

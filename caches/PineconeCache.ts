@@ -3,7 +3,7 @@ import { LRUCache } from "./base_caches/LRUCache";
 import { maxCacheSize } from "../config.json";
 
 export class PineconeCache {
-	public static instance: PineconeCache;
+	private static instance: PineconeCache;
 	private embedQuerys: LRUCache<string, number[]> = new LRUCache(maxCacheSize);
 	private embedPassages: LRUCache<string, number[]> = new LRUCache(
 		maxCacheSize

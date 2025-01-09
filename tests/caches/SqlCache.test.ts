@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "bun:test";
-import { SqlCache } from "../caches/SqlCache";
-import { Book } from "../types";
+import { SqlCache } from "../../caches";
+import { Book } from "../../types";
 
 describe("SqlCache", () => {
 	beforeEach(() => {

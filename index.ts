@@ -1,12 +1,21 @@
 import { Client, GatewayIntentBits } from "discord.js";
 import path from "path";
 import fs from "fs";
+import { SlashManager, DBManager, BookEventManager } from "./managers";
 
 class DiscordBot {
 	private client: Client;
-	constructor() {
+	static instance: DiscordBot;
+	static getInstance() {
+		if (!DiscordBot.instance) {
+			DiscordBot.instance = new DiscordBot();
+		}
+		return DiscordBot.instance;
+	}
+	private constructor() {
 		this.createClient();
 		this.loadEvents();
+		this.prepareManagers();
 		this.login();
 	}
 	private createClient() {
@@ -34,8 +43,18 @@ class DiscordBot {
 			}
 		}
 	}
+	private prepareManagers() {
+		SlashManager.getInstance();
+		DBManager.getInstance();
+		BookEventManager.getInstance().setClient(this.client); //Iniciamos los managers
+	}
 	private login() {
 		this.client.login(process.env.DISCORD_TOKEN);
 	}
+	public getClient() {
+		return this.client;
+	}
 }
-const bot = new DiscordBot();
+DiscordBot.getInstance();
+
+export { DiscordBot };
