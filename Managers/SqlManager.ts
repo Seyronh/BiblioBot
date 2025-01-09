@@ -235,6 +235,10 @@ export class SqlManager {
 			sql: `SELECT Pagina FROM Listas WHERE userID = ? AND TituloLibro = ?`,
 			args: [userid, title],
 		});
+		if (listas.rows.length == 0) {
+			dbcache.savePaginasLeidas(userid, title, -1);
+			return;
+		}
 		const count = listas.rows[0]["Pagina"] as number;
 		dbcache.savePaginasLeidas(userid, title, count);
 		return count;
@@ -246,6 +250,10 @@ export class SqlManager {
 			sql: `SELECT Nota FROM Listas WHERE userID = ? AND TituloLibro = ?`,
 			args: [userid, title],
 		});
+		if (listas.rows.length == 0) {
+			dbcache.saveNota(userid, title, -1);
+			return;
+		}
 		const count = listas.rows[0]["Nota"] as number;
 		dbcache.saveNota(userid, title, count);
 		return count;
