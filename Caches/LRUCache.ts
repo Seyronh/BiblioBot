@@ -36,6 +36,7 @@ export class LRUCache<K, V> {
 
 	// Delete all key-value pairs that match the given regular expression
 	deleteAll(key: RegExp) {
+		// @ts-ignore
 		for (const prop of this.cache.keys()) {
 			if (key.test(prop.toString())) {
 				this.cache.delete(prop);

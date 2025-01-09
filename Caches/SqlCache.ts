@@ -101,7 +101,12 @@ export class SqlCache {
 		return this.List.get(`${userid}|${offset}|${estado}`);
 	}
 
-	saveList(userid: string, offset: number, estado: number, list: string[]): void {
+	saveList(
+		userid: string,
+		offset: number,
+		estado: number,
+		list: string[]
+	): void {
 		this.List.put(`${userid}|${offset}|${estado}`, list);
 	}
 
@@ -155,5 +160,8 @@ export class SqlCache {
 		this.List = new LRUCache(maxCacheSize);
 		if (this.AllBooks)
 			this.AllBooks = this.AllBooks.filter((book) => book.Titulo !== title);
+	}
+	totalReset() {
+		SqlCache.instance = undefined;
 	}
 }

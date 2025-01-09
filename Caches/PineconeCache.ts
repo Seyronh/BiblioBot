@@ -35,7 +35,6 @@ export class PineconeCache {
 	saveQuery(title: string, query: QueryOptions, results: any) {
 		let key = `${title}|${query.topK}|${query.includeMetadata}`;
 		if (query.filter) key += `|${query.filter.toString()}`;
-		// @ts-ignore
 		this.querys.put(key, results);
 	}
 	query(title: string, query: QueryOptions) {
