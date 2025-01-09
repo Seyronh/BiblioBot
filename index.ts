@@ -1,32 +1,41 @@
-import { Client, GatewayIntentBits, Interaction } from "discord.js";
+import { Client, GatewayIntentBits } from "discord.js";
+import path from "path";
+import fs from "fs";
 
-import {
-	selectmenuhandle,
-	commandhandle,
-	buttonshandle,
-	autocompletehandle,
-} from "./handlers";
-import { DBManager, BookEventManager } from "./managers";
-DBManager.getInstance(); //Init DBs
+class DiscordBot {
+	private client: Client;
+	constructor() {
+		this.createClient();
+		this.loadEvents();
+		this.login();
+	}
+	private createClient() {
+		this.client = new Client({
+			intents: [
+				GatewayIntentBits.GuildMessages,
+				GatewayIntentBits.Guilds,
+				GatewayIntentBits.DirectMessages,
+			],
+		});
+	}
+	private loadEvents() {
+		const eventsPath = path.join(__dirname, "events");
+		const eventFiles = fs
+			.readdirSync(eventsPath)
+			.filter((file) => file.endsWith(".ts"));
 
-const client = new Client({
-	intents: [
-		GatewayIntentBits.GuildMessages,
-		GatewayIntentBits.Guilds,
-		GatewayIntentBits.DirectMessages,
-	],
-});
-
-client.on("ready", () => {
-	BookEventManager.getInstance().setClient(client);
-	console.log(`Logged in as ${client.user?.tag}!`);
-});
-
-client.on("interactionCreate", async (interaction: Interaction) => {
-	if (interaction.isCommand()) commandhandle(interaction);
-	if (interaction.isAutocomplete()) autocompletehandle(interaction);
-	if (interaction.isButton()) buttonshandle(interaction);
-	if (interaction.isStringSelectMenu()) selectmenuhandle(interaction);
-});
-
-client.login(process.env.DISCORD_TOKEN);
+		for (const file of eventFiles) {
+			const filePath = path.join(eventsPath, file);
+			const event = require(filePath).default;
+			if (event.once) {
+				this.client.once(event.name, (...args) => event.execute(...args));
+			} else {
+				this.client.on(event.name, (...args) => event.execute(...args));
+			}
+		}
+	}
+	private login() {
+		this.client.login(process.env.DISCORD_TOKEN);
+	}
+}
+const bot = new DiscordBot();

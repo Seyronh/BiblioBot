@@ -36,3 +36,8 @@ export enum Roles {
 	Moderador = "1321948892090339452",
 	Colaborador = "1321908587814981692",
 }
+export interface Event {
+	name: string;
+	execute: (...args: any[]) => Promise<void>;
+	once?: boolean;
+}
