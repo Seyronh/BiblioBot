@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "bun:test";
-import { SqlCache } from "../Caches/SqlCache";
+import { SqlCache } from "../cache";
 import { Book } from "../interfaces";
 
 describe("SqlCache", () => {
