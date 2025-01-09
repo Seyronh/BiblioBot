@@ -1,5 +1,5 @@
 import { ButtonInteraction, TextChannel, MessageFlags } from "discord.js";
-import { DBManager } from "../Managers/DBManager";
+import { DBManager } from "../managers";
 const db = DBManager.getInstance();
 const IndexEstados = ["leido", "enprogreso", "planeandoleer"];
 

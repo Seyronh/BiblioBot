@@ -1,13 +1,12 @@
-import { autocompletehandle } from "./handlers/autocomplete";
-import { buttonshandle } from "./handlers/buttons";
-import { commandhandle } from "./handlers/command";
 import { Client, GatewayIntentBits, Interaction } from "discord.js";
-import { modalhandle } from "./handlers/modal";
 
-import { BookEventManager } from "./Managers/BookEventManager";
-import { selectmenuhandle } from "./handlers/selectmenu";
-import { DBManager } from "./Managers/DBManager";
-
+import {
+	selectmenuhandle,
+	commandhandle,
+	buttonshandle,
+	autocompletehandle,
+} from "./handlers";
+import { DBManager, BookEventManager } from "./managers";
 DBManager.getInstance(); //Init DBs
 
 const client = new Client({
@@ -27,7 +26,6 @@ client.on("interactionCreate", async (interaction: Interaction) => {
 	if (interaction.isCommand()) commandhandle(interaction);
 	if (interaction.isAutocomplete()) autocompletehandle(interaction);
 	if (interaction.isButton()) buttonshandle(interaction);
-	if (interaction.isModalSubmit()) modalhandle(interaction);
 	if (interaction.isStringSelectMenu()) selectmenuhandle(interaction);
 });
 

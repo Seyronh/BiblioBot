@@ -7,10 +7,10 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import { Command } from "../interfaces";
-import { DBManager } from "../Managers/DBManager";
-import { bookembedhandle } from "../handlers/bookembed";
-import { handleBookInteraction } from "../handlers/handlebookinteraction";
+import { Command } from "../types";
+import { DBManager } from "../managers";
+import { bookembed } from "../utils";
+import { handleBookInteraction } from "../handlers";
 
 const db = DBManager.getInstance();
 
@@ -28,7 +28,7 @@ const comando: Command = {
 			});
 			return;
 		}
-		const embed = bookembedhandle(
+		const embed = bookembed(
 			book[0],
 			"Libro aleatorio",
 			await db.getNotaMedia(book[0].Titulo)

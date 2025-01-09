@@ -9,6 +9,7 @@ import {
 } from "discord.js";
 
 export interface Command {
+	guildOnly?: boolean;
 	data: SlashCommandBuilder | ContextMenuCommandBuilder;
 	execute: (interaction: CommandInteraction) => Promise<void>;
 	autoComplete?: (interaction: AutocompleteInteraction) => Promise<void>;
@@ -29,4 +30,9 @@ export interface Perms {
 	create: boolean;
 	update: boolean;
 	delete: boolean;
+}
+
+export enum Roles {
+	Moderador = "1321948892090339452",
+	Colaborador = "1321908587814981692",
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { PineconeCache } from "../Caches/PineconeCache";
+import { PineconeCache } from "../caches/PineconeCache";
 
 describe("PineconeCache", () => {
 	it("should return undefined for non-existent embedQuery", () => {

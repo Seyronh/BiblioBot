@@ -1,6 +1,6 @@
 import { maxCacheSize } from "../config.json";
-import { Book } from "../interfaces";
-import { LRUCache } from "./LRUCache";
+import { Book } from "../types";
+import { LRUCache } from "./base_caches/LRUCache";
 
 export class SqlCache {
 	private bookbytitle: LRUCache<string, Book>;

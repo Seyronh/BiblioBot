@@ -4,14 +4,14 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import { Command } from "../interfaces";
-import { DBManager } from "../Managers/DBManager";
-import { moderadores as moderadoresRolID } from "../config.json";
-import { BookEventManager } from "../Managers/BookEventManager";
+import { Command, Roles } from "../types";
+import { DBManager, BookEventManager } from "../managers";
+import { hasRole } from "../utils";
 
 const db = DBManager.getInstance();
 
 const comando: Command = {
+	guildOnly: true,
 	data: new SlashCommandBuilder()
 		.setName("borrarlibro")
 		.setDescription("Elimina un libro")
@@ -23,7 +23,7 @@ const comando: Command = {
 				.setAutocomplete(true)
 		) as SlashCommandBuilder,
 	execute: async (interaction) => {
-		if (!hasRole(interaction, moderadoresRolID)) {
+		if (!hasRole(interaction, Roles.Moderador)) {
 			await interaction.reply({
 				content: "No tienes permiso para usar este comando",
 				flags: MessageFlags.Ephemeral,
@@ -67,8 +67,3 @@ const comando: Command = {
 	},
 };
 export default comando;
-
-// Function to check if the user has the required role
-function hasRole(interaction, roleId) {
-	return interaction.member.roles.cache.some((role) => role.id == roleId);
-}

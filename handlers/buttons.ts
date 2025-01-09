@@ -1,5 +1,5 @@
 import { ButtonInteraction } from "discord.js";
-import { SlashManager } from "../Managers/SlashManager";
+import { SlashManager } from "../managers";
 
 export async function buttonshandle(interaction: ButtonInteraction) {
 	try {

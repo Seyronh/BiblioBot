@@ -1,5 +1,5 @@
 import { QueryOptions } from "@pinecone-database/pinecone";
-import { LRUCache } from "./LRUCache";
+import { LRUCache } from "./base_caches/LRUCache";
 import { maxCacheSize } from "../config.json";
 
 export class PineconeCache {

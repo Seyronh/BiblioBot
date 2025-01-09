@@ -1,7 +1,7 @@
 import { AttachmentBuilder, Client } from "discord.js";
-import { Book } from "../interfaces";
+import { Book } from "../types";
 import { canal_eventolibros } from "../config.json";
-import { bookembedhandle } from "../handlers/bookembed";
+import { bookembed } from "../utils";
 
 export class BookEventManager {
 	private static instance: BookEventManager;
@@ -37,7 +37,7 @@ export class BookEventManager {
 				channel.send({
 					content: evento.message,
 					embeds: [
-						bookembedhandle(
+						bookembed(
 							evento.book,
 							"Puedes buscar mas informacion sobre este libro con el comando /verlibro"
 						),

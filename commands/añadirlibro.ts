@@ -13,11 +13,10 @@ import {
 	AttachmentBuilder,
 	ButtonInteraction,
 } from "discord.js";
-import { Book, Command } from "../interfaces";
+import { Book, Command, Roles } from "../types";
 import { canal_sugerencias } from "../config.json";
-import { bookembedhandle } from "../handlers/bookembed";
-import { DBManager } from "../Managers/DBManager";
-import { BookEventManager } from "../Managers/BookEventManager";
+import { bookembed, hasRole } from "../utils";
+import { DBManager, BookEventManager } from "../managers";
 
 const db = DBManager.getInstance();
 
@@ -50,14 +49,16 @@ const comando: Command = {
 		const collectorFilter = (i) => {
 			return i.user.id === interaction.user.id;
 		};
-		 // @ts-ignore
-		interaction.awaitModalSubmit({ time: 600_000, collectorFilter })
+		// @ts-ignore
+		interaction
+			.awaitModalSubmit({ time: 600_000, filter: collectorFilter })
 			.then(async (interaction2) => {
 				await handleModalSubmit(interaction2, title, image);
 			})
 			.catch((err) => {});
 	},
 	buttons: async (interaction: ButtonInteraction) => {
+		if (!hasRole(interaction, Roles.Colaborador)) return;
 		if (interaction.customId === "Confirm") {
 			await handleConfirmButton(interaction);
 		} else if (interaction.customId === "Cancel") {
@@ -148,14 +149,11 @@ async function handleModalSubmit(interaction2, title, image) {
 	const generos = interaction2.fields.getTextInputValue("generos");
 	let paginas;
 	try {
-		paginas = parseInt(
-			interaction2.fields.getTextInputValue("paginas").trim()
-		);
+		paginas = parseInt(interaction2.fields.getTextInputValue("paginas").trim());
 		if (paginas <= 0) throw new Error();
 	} catch (err) {
 		await interaction2.editReply({
-			content:
-				"El numero de páginas debe ser un numero entero mayor que 0",
+			content: "El numero de páginas debe ser un numero entero mayor que 0",
 		});
 		return;
 	}
@@ -165,13 +163,11 @@ async function handleModalSubmit(interaction2, title, image) {
 		Titulo: title,
 		Sinopsis: sinopsis.trim(),
 		Autor: autor.trim(),
-		Generos: generos
-			.split(",")
-			.map((genero) => genero.trim().toLowerCase()),
+		Generos: generos.split(",").map((genero) => genero.trim().toLowerCase()),
 		Paginas: paginas,
 		Imagen: buffer,
 	};
-	const embed = bookembedhandle(
+	const embed = bookembed(
 		book,
 		`Enviado por: ${interaction2.user.tag} | ID:${interaction2.user.id}`,
 		{
@@ -224,8 +220,7 @@ async function handleConfirmButton(interaction) {
 		const bookTest = await db.getBookByTitle(title);
 		if (bookTest) {
 			await interaction.reply({
-				content:
-					"Ya existe un libro con ese titulo, eliminado de sugerencias.",
+				content: "Ya existe un libro con ese titulo, eliminado de sugerencias.",
 				flags: MessageFlags.Ephemeral,
 			});
 			await Message.delete();

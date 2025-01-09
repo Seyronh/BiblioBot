@@ -3,8 +3,8 @@ import {
 	CommandInteractionOptionResolver,
 	SlashCommandBuilder,
 } from "discord.js";
-import { Command } from "../interfaces";
-import { DBManager } from "../Managers/DBManager";
+import { Command } from "../types";
+import { DBManager } from "../managers";
 
 const db = DBManager.getInstance();
 

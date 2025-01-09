@@ -8,9 +8,9 @@ import {
 	ContextMenuCommandBuilder,
 	MessageContextMenuCommandInteraction,
 } from "discord.js";
-import { Command } from "../interfaces";
-import { DBManager } from "../Managers/DBManager";
-import { bookembedhandle } from "../handlers/bookembed";
+import { Command } from "../types";
+import { DBManager } from "../managers";
+import { bookembed } from "../utils";
 
 const db = DBManager.getInstance();
 const comando: Command = {
@@ -47,7 +47,7 @@ const comando: Command = {
 			if (partes[1] == interaction.message.embeds[0].title) return;
 			const Titulo = partes[1];
 			const book = await db.getBookByTitle(Titulo);
-			const embed = bookembedhandle(
+			const embed = bookembed(
 				book,
 				"para mas información usa el comando /verlibro",
 				await db.getNotaMedia(book.Titulo)

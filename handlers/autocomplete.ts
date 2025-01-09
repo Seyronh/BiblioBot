@@ -1,5 +1,5 @@
 import { Interaction } from "discord.js";
-import { SlashManager } from "../Managers/SlashManager.js";
+import { SlashManager } from "../managers";
 
 export async function autocompletehandle(interaction: Interaction) {
 	try {

@@ -8,7 +8,7 @@ import {
 
 import fs from "fs";
 import path from "path";
-import { Command } from "../interfaces.js";
+import { Command } from "../types.js";
 
 const commandsPath = path.join(__dirname, "..", "commands");
 
@@ -26,7 +26,10 @@ export class SlashManager {
 		this.loadCommands();
 	}
 	public getCommandsJSON() {
-		return this.commands.map((command) => command.data.toJSON());
+		return this.commands.map((command) => ({
+			data: command.data.toJSON(),
+			guildOnly: command.guildOnly,
+		}));
 	}
 	public execute(interaction: CommandInteraction) {
 		const command = this.getCommand(interaction.commandName);

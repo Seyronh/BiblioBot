@@ -1,6 +1,6 @@
 import { Index, Pinecone } from "@pinecone-database/pinecone";
-import { Book } from "../interfaces";
-import { PineconeCache } from "../Caches/PineconeCache";
+import { Book } from "../types";
+import { PineconeCache } from "../caches";
 
 const removeAccents = (str) => {
 	return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");

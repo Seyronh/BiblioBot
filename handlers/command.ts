@@ -1,5 +1,5 @@
 import { Interaction } from "discord.js";
-import { SlashManager } from "../Managers/SlashManager.js";
+import { SlashManager } from "../managers";
 import { MessageFlags } from "discord.js";
 
 export async function commandhandle(interaction: Interaction) {

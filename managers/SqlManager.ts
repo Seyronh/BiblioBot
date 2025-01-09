@@ -1,8 +1,8 @@
 import { Client, createClient, ResultSet } from "@libsql/client";
 
 import { maxLibrosPorPagina } from "../config.json";
-import { Book } from "../interfaces";
-import { SqlCache } from "../Caches/SqlCache";
+import { Book } from "../types";
+import { SqlCache } from "../caches";
 
 function convertToBook(book: any): Book {
 	book.Imagen = hexToArrayBuffer(book.Imagen);

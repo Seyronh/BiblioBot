@@ -1,4 +1,4 @@
-import { Book } from "../interfaces";
+import { Book } from "../types";
 
 import { PineconeManager } from "./PineconeManager";
 import { SqlManager } from "./SqlManager";

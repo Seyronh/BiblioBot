@@ -1,7 +1,12 @@
 import { EmbedBuilder } from "discord.js";
-import { Book } from "../interfaces";
+import { Book } from "../types";
 
-function createEmbedFields(book: Book, notaMedia?: { media: number; count: number }, paginasLeidas?: number, nota?: number) {
+function createEmbedFields(
+	book: Book,
+	notaMedia?: { media: number; count: number },
+	paginasLeidas?: number,
+	nota?: number
+) {
 	const fields = [
 		{
 			name: "Generos",
@@ -62,7 +67,7 @@ function createDefaultEmbed(book: Book, footer: string): EmbedBuilder {
 	return embed;
 }
 
-export function bookembedhandle(
+export function bookembed(
 	book: Book,
 	footer: string,
 	notaMedia?: {

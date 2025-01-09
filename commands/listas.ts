@@ -17,9 +17,9 @@ import {
 	StringSelectMenuOptionBuilder,
 	TextChannel,
 } from "discord.js";
-import { Command } from "../interfaces";
-import { DBManager } from "../Managers/DBManager";
-import { bookembedhandle } from "../handlers/bookembed";
+import { Command } from "../types";
+import { DBManager } from "../managers";
+import { bookembed } from "../utils";
 import { maxLibrosPorPagina, maxPaginas } from "../config.json";
 
 const Estados = ["leidos", "en progreso", "planeandos para leer"];
@@ -96,7 +96,7 @@ async function responder(
 	const attachment = new AttachmentBuilder(imageBuffer, {
 		name: `imagen.jpg`,
 	});
-	const embednuevo = bookembedhandle(
+	const embednuevo = bookembed(
 		book,
 		`Libro: ${libro + 1}/${books.length} | Pagina: ${
 			pagina + 1
@@ -182,7 +182,7 @@ const comando: Command = {
 		});
 		const totallibros = await db.getListCount(interaction.user.id, estado);
 		const paginastotal = Math.ceil(totallibros / maxLibrosPorPagina);
-		const embed = bookembedhandle(
+		const embed = bookembed(
 			book,
 			`Libro: 1/${books.length} | Pagina: 1/${paginastotal} | userid: ${interaction.user.id}`,
 			await db.getNotaMedia(book.Titulo),

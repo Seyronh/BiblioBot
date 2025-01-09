@@ -1,6 +1,5 @@
 import { Interaction } from "discord.js";
-import { SlashManager } from "../Managers/SlashManager.js";
-import { MessageFlags } from "discord.js";
+import { SlashManager } from "../managers";
 
 export async function selectmenuhandle(interaction: Interaction) {
 	try {
