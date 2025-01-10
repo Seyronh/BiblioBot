@@ -12,11 +12,18 @@ import {
 	TextChannel,
 	AttachmentBuilder,
 	ButtonInteraction,
+	StringSelectMenuOptionBuilder,
+	StringSelectMenuBuilder,
+	StringSelectMenuInteraction,
+	SelectMenuBuilder,
+	ButtonComponent,
+	ModalSubmitInteraction,
 } from "discord.js";
 import { Book, Command, Roles } from "../types";
 import { canal_sugerencias } from "../config.json";
 import { bookembed, hasRole } from "../utils";
 import { DBManager, BookEventManager } from "../managers";
+import { generosDisponibles } from "../config.json";
 
 const db = DBManager.getInstance();
 
@@ -37,36 +44,134 @@ const comando: Command = {
 				.setRequired(true)
 		) as SlashCommandBuilder,
 	execute: async (interaction) => {
+		interaction.deferReply();
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
 
 		const title = interactionOptions.getString("titulo").trim();
 		const image = interactionOptions.getAttachment("imagen");
-		const modal = createModal();
+		if (title.indexOf("|") !== -1 || title.indexOf("\n") !== -1) {
+			await interaction.editReply({
+				content: "El titulo no debe contener '|' ni saltos de linea",
+			});
+			return;
+		}
+		if (await db.existsBook(title)) {
+			await interaction.editReply({
+				content: "Ya existe un libro con ese titulo",
+			});
+			return;
+		}
+		if (!image.contentType || !image.contentType.startsWith("image/")) {
+			await interaction.editReply({
+				content: "El archivo debe ser una imagen",
+			});
+			return;
+		}
+		const Generos = new StringSelectMenuBuilder()
+			.setCustomId(`${comando.data.name}|generos|${interaction.user.id}`)
+			.setPlaceholder("Elige los generos del libro")
+			.setMinValues(1)
+			.setMaxValues(25)
+			.addOptions(createMenuOptions());
+		const botonContinuar = new ButtonBuilder()
+			.setCustomId(`${comando.data.name}|Continuar|${interaction.user.id}`)
+			.setLabel("Continuar")
+			.setStyle(ButtonStyle.Primary)
+			.setDisabled(true);
 
-		// @ts-ignore
-		await interaction.showModal(modal);
-		const collectorFilter = (i) => {
-			return i.user.id === interaction.user.id;
-		};
-		// @ts-ignore
-		interaction
-			.awaitModalSubmit({ time: 600_000, filter: collectorFilter })
-			.then(async (interaction2) => {
-				await handleModalSubmit(interaction2, title, image);
-			})
-			.catch((err) => {});
+		const row1 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			Generos
+		);
+		const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			botonContinuar
+		);
+		await interaction.editReply({
+			content: `Elige los generos del libro y pulsa Continuar\n\n|${title}|${image.url}`,
+			components: [row1, row2],
+		});
 	},
 	buttons: async (interaction: ButtonInteraction) => {
-		if (!hasRole(interaction, Roles.Colaborador)) return;
-		if (interaction.customId === "Confirm") {
-			await handleConfirmButton(interaction);
-		} else if (interaction.customId === "Cancel") {
-			await handleCancelButton(interaction);
+		const partes = interaction.customId.split("|");
+		if (partes[0] === "Continuar") {
+			if (interaction.user.id !== interaction.customId.split("|")[1]) return;
+			await handleContinuarButton(interaction);
 		}
+		if (hasRole(interaction, Roles.Colaborador)) {
+			await interaction.deferReply();
+			if (interaction.customId === "Confirm") {
+				await handleConfirmButton(interaction);
+			} else if (interaction.customId === "Cancel") {
+				await handleCancelButton(interaction);
+			}
+		}
+	},
+	selectMenu: async (interaction: StringSelectMenuInteraction) => {
+		if (interaction.user.id !== interaction.customId.split("|")[1]) return;
+		const selected = interaction.values.join(",");
+		const row1 = interaction.message.components[0];
+		const row2 = interaction.message.components[1];
+		if (interaction.message.components[1].components[0].disabled) {
+			row2.components[0] = ButtonBuilder.from(
+				row2.components[0] as any
+			).setDisabled(false) as any;
+		}
+		await interaction.update({
+			content: insertTextInMiddle(
+				interaction.message.content,
+				`generos seleccionados: ${selected}`
+			),
+			components: [row1, row2],
+		});
 	},
 };
 export default comando;
+
+async function handleContinuarButton(interaction: ButtonInteraction) {
+	const message = interaction.message;
+	const titleImageLine = message.content.split("\n");
+	const titleImage = titleImageLine[2].split("|");
+	const title = titleImage[1];
+	const image = titleImage[2];
+	const generos = extraerGeneros(interaction.message.content);
+	const modal = createModal();
+
+	// @ts-ignore
+	await interaction.showModal(modal);
+	const collectorFilter = (i) => {
+		return i.user.id === interaction.user.id;
+	};
+	// @ts-ignore
+	interaction
+		.awaitModalSubmit({ time: 600_000, filter: collectorFilter })
+		.then(async (interaction2) => {
+			await handleModalSubmit(interaction, interaction2, title, image, generos);
+		})
+		.catch((err) => {
+			console.log(err);
+		});
+}
+
+function insertTextInMiddle(text: string, middleText: string) {
+	const partes = text.split("\n");
+	return `${partes[0]}\n${middleText}\n${partes[2]}`;
+}
+function extraerGeneros(text: String) {
+	const partes = text.split("\n");
+	return partes[1].split(": ")[1];
+}
+function createMenuOptions() {
+	const options: StringSelectMenuOptionBuilder[] = [];
+	for (let i = 0; i < 25; i++) {
+		const genero = generosDisponibles[i];
+		options.push(
+			new StringSelectMenuOptionBuilder()
+				.setLabel(`${genero}`)
+				.setValue(`${genero}`)
+		);
+	}
+	return options;
+}
 
 // Function to create the modal for adding a book
 function createModal() {
@@ -97,14 +202,6 @@ function createModal() {
 		.setPlaceholder("El autor del libro")
 		.setMaxLength(1024);
 
-	const genres = new TextInputBuilder()
-		.setCustomId("generos")
-		.setLabel("Géneros")
-		.setStyle(TextInputStyle.Short)
-		.setRequired(true)
-		.setPlaceholder("Los géneros del libro separados por comas")
-		.setMaxLength(1024);
-
 	const firstRow =
 		new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
 			paginas
@@ -119,62 +216,55 @@ function createModal() {
 		new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
 			author
 		);
-
-	const fifthRow =
-		new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
-			genres
-		);
-
-	modal.addComponents(fifthRow, secondRow, fourthRow, firstRow);
+	modal.addComponents(secondRow, fourthRow, firstRow);
 	return modal;
 }
 
 // Function to handle the modal submit
-async function handleModalSubmit(interaction2, title, image) {
-	await interaction2.deferReply({ ephemeral: true });
-	if (await db.existsBook(title)) {
-		await interaction2.editReply({
-			content: "Ya existe un libro con ese titulo",
-		});
-		return;
-	}
-	if (!image.contentType || !image.contentType.startsWith("image/")) {
-		await interaction2.editReply({
-			content: "El archivo debe ser una imagen",
-		});
-		return;
-	}
-	const sinopsis = interaction2.fields.getTextInputValue("sinopsis");
-	const autor = interaction2.fields.getTextInputValue("autor");
-	const generos = interaction2.fields.getTextInputValue("generos");
+async function handleModalSubmit(
+	interactionButton: ButtonInteraction,
+	interactionModal: ModalSubmitInteraction,
+	title: string,
+	image: string,
+	generos: string
+) {
+	await interactionModal.deferReply({ flags: MessageFlags.Ephemeral });
+	const sinopsis = interactionModal.fields.getTextInputValue("sinopsis");
+	const autor = interactionModal.fields.getTextInputValue("autor");
 	let paginas;
 	try {
-		paginas = parseInt(interaction2.fields.getTextInputValue("paginas").trim());
+		paginas = parseInt(
+			interactionModal.fields.getTextInputValue("paginas").trim()
+		);
 		if (paginas <= 0) throw new Error();
 	} catch (err) {
-		await interaction2.editReply({
+		await interactionModal.editReply({
 			content: "El numero de páginas debe ser un numero entero mayor que 0",
 		});
 		return;
 	}
-	const response = await fetch(image.url);
+
+	const response = await fetch(image);
+
 	const buffer = await response.arrayBuffer();
+
 	const book: Book = {
 		Titulo: title,
 		Sinopsis: sinopsis.trim(),
 		Autor: autor.trim(),
-		Generos: generos.split(",").map((genero) => genero.trim().toLowerCase()),
+		Generos: generos.split(","),
 		Paginas: paginas,
 		Imagen: buffer,
 	};
 	const embed = bookembed(
 		book,
-		`Enviado por: ${interaction2.user.tag} | ID:${interaction2.user.id}`,
+		`Enviado por: ${interactionModal.user.tag} | ID:${interactionModal.user.id}`,
 		{
 			media: -1,
 			count: 0,
 		}
 	);
+
 	const confirm = new ButtonBuilder()
 		.setCustomId(`${comando.data.name}|Confirm`)
 		.setLabel("Confirmar")
@@ -188,11 +278,15 @@ async function handleModalSubmit(interaction2, title, image) {
 		cancel,
 		confirm
 	);
-
-	await interaction2.editReply({
+	const channel = (await interactionButton.client.channels.fetch(
+		interactionButton.channelId
+	)) as TextChannel;
+	const message = await channel.messages.fetch(interactionButton.message.id);
+	if (message.deletable) message.delete();
+	await interactionModal.editReply({
 		content: "Gracias por tu sugerencia",
 	});
-	const Channel = (await interaction2.client.channels.fetch(
+	const Channel = (await interactionModal.client.channels.fetch(
 		canal_sugerencias
 	)) as TextChannel;
 	if (Channel) {
