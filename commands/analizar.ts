@@ -7,6 +7,7 @@ import {
 	ButtonStyle,
 	ContextMenuCommandBuilder,
 	MessageContextMenuCommandInteraction,
+	MessageFlags,
 } from "discord.js";
 import { Command } from "../types";
 import { DBManager } from "../managers";
@@ -18,7 +19,7 @@ const comando: Command = {
 		.setName("analizar")
 		.setType(ApplicationCommandType.Message as any),
 	execute: async (interaction: MessageContextMenuCommandInteraction) => {
-		await interaction.deferReply({ ephemeral: true });
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 		const message = interaction.targetMessage;
 		if (!message.content || message.content.trim().length == 0) {
 			await interaction.editReply("No hay contenido en el mensaje");

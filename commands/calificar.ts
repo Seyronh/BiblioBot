@@ -1,6 +1,7 @@
 import {
 	AutocompleteInteraction,
 	CommandInteractionOptionResolver,
+	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
 import { Command } from "../types";
@@ -27,7 +28,7 @@ const comando: Command = {
 				.setAutocomplete(true)
 		) as SlashCommandBuilder,
 	execute: async (interaction) => {
-		await interaction.deferReply({ ephemeral: true });
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
 		const titulo = interactionOptions.getString("título");
