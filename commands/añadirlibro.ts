@@ -69,13 +69,13 @@ const comando: Command = {
 			return;
 		}
 		const Generos = new StringSelectMenuBuilder()
-			.setCustomId(`${comando.data.name}|generos`)
+			.setCustomId(`${comando.data.name}|generos|${interaction.user.id}`)
 			.setPlaceholder("Elige los generos del libro")
 			.setMinValues(1)
 			.setMaxValues(25)
 			.addOptions(createMenuOptions());
 		const botonContinuar = new ButtonBuilder()
-			.setCustomId(`${comando.data.name}|Continuar`)
+			.setCustomId(`${comando.data.name}|Continuar|${interaction.user.id}`)
 			.setLabel("Continuar")
 			.setStyle(ButtonStyle.Primary)
 			.setDisabled(true);
@@ -94,16 +94,20 @@ const comando: Command = {
 	buttons: async (interaction: ButtonInteraction) => {
 		const partes = interaction.customId.split("|");
 		if (partes[0] === "Continuar") {
+			if (interaction.user.id !== interaction.customId.split("|")[1]) return;
 			await handleContinuarButton(interaction);
 		}
-		if (!hasRole(interaction, Roles.Colaborador)) return;
-		if (interaction.customId === "Confirm") {
-			await handleConfirmButton(interaction);
-		} else if (interaction.customId === "Cancel") {
-			await handleCancelButton(interaction);
+		if (hasRole(interaction, Roles.Colaborador)) {
+			await interaction.deferReply();
+			if (interaction.customId === "Confirm") {
+				await handleConfirmButton(interaction);
+			} else if (interaction.customId === "Cancel") {
+				await handleCancelButton(interaction);
+			}
 		}
 	},
 	selectMenu: async (interaction: StringSelectMenuInteraction) => {
+		if (interaction.user.id !== interaction.customId.split("|")[1]) return;
 		const selected = interaction.values.join(",");
 		const row1 = interaction.message.components[0];
 		const row2 = interaction.message.components[1];
