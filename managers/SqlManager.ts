@@ -67,7 +67,7 @@ export class SqlManager {
 	}
 	public constructor() {
 		this.database = createClient({
-			url: process.env.TURSO_DB_URL,
+			url: process.env.TURSO_DB_URL || ":memory:",
 			authToken: process.env.TURSO_AUTH_TOKEN,
 		});
 	}
