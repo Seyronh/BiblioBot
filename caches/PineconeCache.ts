@@ -48,4 +48,8 @@ export class PineconeCache {
 	saveFetch(title: string, results: any) {
 		this.fetches.put(title, results);
 	}
+	delete(title: string) {
+		this.querys.deleteAll(new RegExp(`${title}$\\|`));
+		this.fetches.delete(title);
+	}
 }
