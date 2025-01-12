@@ -165,7 +165,7 @@ async function cambiarTitulo(interaction: CommandInteraction, titulo: string) {
 		});
 		return;
 	}
-	await db.updateBookTitleByTitle(titulo, nuevotitulo);
+	await db.updateBookTitle(titulo, nuevotitulo);
 	await interaction.editReply({
 		content: `Titulo actualizado con exito`,
 	});

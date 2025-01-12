@@ -74,12 +74,14 @@ export class PineconeManager {
 		return results;
 	}
 	async delete(title: string) {
+		cache.delete(title);
 		await this.index
 			.namespace(process.env.PINECONE_NAMESPACE)
 			.deleteOne(removeAccents(title));
 	}
-	async updateBookTitleByTitle(titleinput: string, Book: Book) {
-		await this.delete(titleinput);
-		await this.insertBook(Book);
+	async updateBookTitle(titleinput: string, Book: Book) {
+		const uno = this.delete(titleinput);
+		const dos = this.insertBook(Book);
+		await Promise.all([uno, dos]);
 	}
 }

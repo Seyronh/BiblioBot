@@ -30,11 +30,11 @@ export class DBManager {
 	public async getBookByTitle(titleinput: string): Promise<Book> {
 		return await this.sqlmanager.getBookByTitle(titleinput);
 	}
-	public async updateBookTitleByTitle(titleinput: string, newtitle: string) {
+	public async updateBookTitle(titleinput: string, newtitle: string) {
 		const book = await this.getBookByTitle(titleinput);
 		book.Titulo = newtitle;
-		const uno = this.pineconemanager.updateBookTitleByTitle(titleinput, book);
-		const dos = this.sqlmanager.updateBookTitleByTitle(titleinput, newtitle);
+		const uno = this.pineconemanager.updateBookTitle(titleinput, book);
+		const dos = this.sqlmanager.updateBookTitle(titleinput, newtitle);
 		await Promise.all([uno, dos]);
 		return;
 	}

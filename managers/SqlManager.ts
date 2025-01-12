@@ -291,7 +291,7 @@ export class SqlManager {
 		dbcache.deleteNota(userid, title);
 		return;
 	}
-	public async updateBookTitleByTitle(titleinput: string, newtitle: string) {
+	public async updateBookTitle(titleinput: string, newtitle: string) {
 		const update1 = this.database.execute({
 			sql: `UPDATE Libros SET Titulo = ? WHERE Titulo = ?`,
 			args: [newtitle, titleinput],
