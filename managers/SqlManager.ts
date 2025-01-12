@@ -65,7 +65,7 @@ export class SqlManager {
 		}
 		return SqlManager.instance;
 	}
-	public constructor() {
+	private constructor() {
 		this.database = createClient({
 			url: process.env.TURSO_DB_URL || ":memory:",
 			authToken: process.env.TURSO_AUTH_TOKEN,
@@ -290,5 +290,17 @@ export class SqlManager {
 		});
 		dbcache.deleteNota(userid, title);
 		return;
+	}
+	public async updateBookTitleByTitle(titleinput: string, newtitle: string) {
+		const update1 = this.database.execute({
+			sql: `UPDATE Libros SET Titulo = ? WHERE Titulo = ?`,
+			args: [newtitle, titleinput],
+		});
+		const update2 = this.database.execute({
+			sql: `UPDATE Listas SET TituloLibro = ? WHERE TituloLibro = ?`,
+			args: [newtitle, titleinput],
+		});
+		await Promise.all([update1, update2]);
+		dbcache.updateBookTitle(titleinput, newtitle);
 	}
 }

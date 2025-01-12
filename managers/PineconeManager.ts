@@ -18,7 +18,7 @@ export class PineconeManager {
 		}
 		return PineconeManager.instance;
 	}
-	constructor() {
+	private constructor() {
 		this.pinecone = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
 		this.index = this.pinecone.index(process.env.PINECONE_INDEX);
 	}
@@ -74,8 +74,12 @@ export class PineconeManager {
 		return results;
 	}
 	async delete(title: string) {
-		await this.index.deleteMany({
-			titulo: { $eq: title },
-		});
+		await this.index
+			.namespace(process.env.PINECONE_NAMESPACE)
+			.deleteOne(removeAccents(title));
+	}
+	async updateBookTitleByTitle(titleinput: string, Book: Book) {
+		await this.delete(titleinput);
+		await this.insertBook(Book);
 	}
 }

@@ -146,6 +146,14 @@ export class SqlCache {
 	updateCachesInsert(book: Book): void {
 		if (this.AllBooks) this.AllBooks.push(book);
 	}
+	updateBookTitle(titleinput: string, newtitle: string): void {
+		const book = this.bookbytitle.get(titleinput);
+		if (book) {
+			book.Titulo = newtitle;
+		}
+		this.bookbytitle.put(newtitle, book);
+		this.updateCachesDelete(titleinput);
+	}
 
 	updateCachesDelete(title: string): void {
 		this.bookbytitle.delete(title);
