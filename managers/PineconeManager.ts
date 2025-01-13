@@ -79,7 +79,7 @@ export class PineconeManager {
 			.namespace(process.env.PINECONE_NAMESPACE)
 			.deleteOne(removeAccents(title));
 	}
-	async updateBookTitle(titleinput: string, Book: Book) {
+	async updateBook(titleinput: string, Book: Book) {
 		const uno = this.delete(titleinput);
 		const dos = this.insertBook(Book);
 		await Promise.all([uno, dos]);
