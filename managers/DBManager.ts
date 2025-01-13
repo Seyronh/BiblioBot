@@ -7,7 +7,7 @@ export class DBManager {
 	private static instance: DBManager;
 	private sqlmanager = SqlManager.getInstance();
 	private pineconemanager = PineconeManager.getInstance();
-	constructor() {}
+	private constructor() {}
 
 	public static getInstance(): DBManager {
 		if (!DBManager.instance) {
@@ -19,8 +19,9 @@ export class DBManager {
 		return await this.sqlmanager.getAllBooks();
 	}
 	public async insertBook(book: Book) {
-		await this.sqlmanager.insertBook(book);
-		await this.pineconemanager.insertBook(book);
+		const uno = this.sqlmanager.insertBook(book);
+		const dos = this.pineconemanager.insertBook(book);
+		await Promise.all([uno, dos]);
 		return;
 	}
 	public async existsBook(title: string): Promise<Boolean> {
@@ -28,6 +29,52 @@ export class DBManager {
 	}
 	public async getBookByTitle(titleinput: string): Promise<Book> {
 		return await this.sqlmanager.getBookByTitle(titleinput);
+	}
+	public async updateBookTitle(titleinput: string, newtitle: string) {
+		const book = await this.getBookByTitle(titleinput);
+		book.Titulo = newtitle;
+		const uno = this.pineconemanager.updateBook(titleinput, book);
+		const dos = this.sqlmanager.updateBookTitle(titleinput, newtitle);
+		await Promise.all([uno, dos]);
+		return;
+	}
+	public async updateBookAuthor(titleinput: string, newauthor: string) {
+		const book = await this.getBookByTitle(titleinput);
+		book.Autor = newauthor;
+		const uno = this.pineconemanager.updateBook(titleinput, book);
+		const dos = this.sqlmanager.updateBookAuthor(titleinput, newauthor);
+		await Promise.all([uno, dos]);
+		return;
+	}
+	public async updateBookSinopsis(titleinput: string, newsinopsis: string) {
+		const book = await this.getBookByTitle(titleinput);
+		book.Sinopsis = newsinopsis;
+		const uno = this.pineconemanager.updateBook(titleinput, book);
+		const dos = this.sqlmanager.updateBookSinopsis(titleinput, newsinopsis);
+		await Promise.all([uno, dos]);
+		return;
+	}
+	public async updateBookPages(titleinput: string, newpages: number) {
+		const book = await this.getBookByTitle(titleinput);
+		book.Paginas = newpages;
+		const uno = this.pineconemanager.updateBook(titleinput, book);
+		const dos = this.sqlmanager.updateBookPages(titleinput, newpages);
+		await Promise.all([uno, dos]);
+		return;
+	}
+	public async updateBookImage(titleinput: string, newimage: ArrayBuffer) {
+		const book = await this.getBookByTitle(titleinput);
+		book.Imagen = newimage;
+		await this.sqlmanager.updateBookImage(titleinput, newimage);
+		return;
+	}
+	public async updateBookGenres(titleinput: string, newgenres: string[]) {
+		const book = await this.getBookByTitle(titleinput);
+		book.Generos = newgenres;
+		const uno = this.pineconemanager.updateBook(titleinput, book);
+		const dos = this.sqlmanager.updateBookGenres(titleinput, newgenres);
+		await Promise.all([uno, dos]);
+		return;
 	}
 	public async getSimilarBooks(
 		book: Book,
@@ -50,9 +97,9 @@ export class DBManager {
 		return similarbooks;
 	}
 	public async removeBook(title: string) {
-		await this.pineconemanager.delete(title);
-		await this.sqlmanager.removeBook(title);
-
+		const uno = this.pineconemanager.delete(title);
+		const dos = this.sqlmanager.removeBook(title);
+		await Promise.all([uno, dos]);
 		return;
 	}
 	public async getRandomBooks(samples: number): Promise<Book[]> {

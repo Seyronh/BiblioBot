@@ -3,56 +3,7 @@ import { Client, createClient, ResultSet } from "@libsql/client";
 import { maxLibrosPorPagina } from "../config.json";
 import { Book } from "../types";
 import { SqlCache } from "../caches";
-
-function convertToBook(book: any): Book {
-	book.Imagen = hexToArrayBuffer(book.Imagen);
-	return {
-		Titulo: book.Titulo as String,
-		Autor: book.Autor as String,
-		Generos: book.Generos.split(",") as String[],
-		Paginas: book.Paginas as Number,
-		Sinopsis: book.Sinopsis as String,
-		Imagen: book.Imagen,
-	} as Book;
-}
-
-function hexToArrayBuffer(input) {
-	if (typeof input !== "string") {
-		throw new TypeError("Expected input to be a string");
-	}
-
-	if (input.length % 2 !== 0) {
-		throw new RangeError("Expected string to be an even number of characters");
-	}
-
-	const view = new Uint8Array(input.length / 2);
-
-	for (let i = 0; i < input.length; i += 2) {
-		view[i / 2] = parseInt(input.substring(i, i + 2), 16);
-	}
-
-	return view.buffer;
-}
-function arrayBufferToHex(arrayBuffer) {
-	if (
-		typeof arrayBuffer !== "object" ||
-		arrayBuffer === null ||
-		typeof arrayBuffer.byteLength !== "number"
-	) {
-		throw new TypeError("Expected input to be an ArrayBuffer");
-	}
-
-	var view = new Uint8Array(arrayBuffer);
-	var result = "";
-	var value;
-
-	for (var i = 0; i < view.length; i++) {
-		value = view[i].toString(16);
-		result += value.length === 1 ? "0" + value : value;
-	}
-
-	return result;
-}
+import { convertToBook, arrayBufferToHex } from "../utils";
 
 const dbcache = SqlCache.getInstance();
 
@@ -65,7 +16,7 @@ export class SqlManager {
 		}
 		return SqlManager.instance;
 	}
-	public constructor() {
+	private constructor() {
 		this.database = createClient({
 			url: process.env.TURSO_DB_URL || ":memory:",
 			authToken: process.env.TURSO_AUTH_TOKEN,
@@ -290,5 +241,52 @@ export class SqlManager {
 		});
 		dbcache.deleteNota(userid, title);
 		return;
+	}
+	public async updateBookTitle(titleinput: string, newtitle: string) {
+		const update1 = this.database.execute({
+			sql: `UPDATE Libros SET Titulo = ? WHERE Titulo = ?`,
+			args: [newtitle, titleinput],
+		});
+		const update2 = this.database.execute({
+			sql: `UPDATE Listas SET TituloLibro = ? WHERE TituloLibro = ?`,
+			args: [newtitle, titleinput],
+		});
+		await Promise.all([update1, update2]);
+		dbcache.updateBookTitle(titleinput, newtitle);
+	}
+	public async updateBookAuthor(titleinput: string, newauthor: string) {
+		await this.database.execute({
+			sql: `UPDATE Libros SET Autor = ? WHERE Titulo = ?`,
+			args: [newauthor, titleinput],
+		});
+		dbcache.updateBookAuthor(titleinput, newauthor);
+	}
+	public async updateBookSinopsis(titleinput: string, newsinopsis: string) {
+		await this.database.execute({
+			sql: `UPDATE Libros SET Sinopsis = ? WHERE Titulo = ?`,
+			args: [newsinopsis, titleinput],
+		});
+		dbcache.updateBookSinopsis(titleinput, newsinopsis);
+	}
+	public async updateBookPages(titleinput: string, newpages: number) {
+		await this.database.execute({
+			sql: `UPDATE Libros SET Paginas = ? WHERE Titulo = ?`,
+			args: [newpages, titleinput],
+		});
+		dbcache.updateBookPages(titleinput, newpages);
+	}
+	public async updateBookImage(titleinput: string, newimage: ArrayBuffer) {
+		await this.database.execute({
+			sql: `UPDATE Libros SET Imagen = ? WHERE Titulo = ?`,
+			args: [arrayBufferToHex(newimage), titleinput],
+		});
+		dbcache.updateBookImage(titleinput, newimage);
+	}
+	public async updateBookGenres(titleinput: string, newgenres: string[]) {
+		await this.database.execute({
+			sql: `UPDATE Libros SET Generos = ? WHERE Titulo = ?`,
+			args: [newgenres.join(","), titleinput],
+		});
+		dbcache.updateBookGenres(titleinput, newgenres);
 	}
 }

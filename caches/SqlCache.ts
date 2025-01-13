@@ -146,6 +146,86 @@ export class SqlCache {
 	updateCachesInsert(book: Book): void {
 		if (this.AllBooks) this.AllBooks.push(book);
 	}
+	updateBookTitle(titleinput: string, newtitle: string): void {
+		const book = this.bookbytitle.get(titleinput);
+		if (book) {
+			book.Titulo = newtitle;
+			this.bookbytitle.put(newtitle, book);
+		}
+		this.updateCachesDelete(titleinput);
+	}
+
+	updateBookAuthor(titleinput: string, newauthor: string): void {
+		const book = this.bookbytitle.get(titleinput);
+		if (book) {
+			book.Autor = newauthor;
+			this.bookbytitle.put(titleinput, book);
+		}
+		if (this.AllBooks)
+			this.AllBooks = this.AllBooks.map((book) => {
+				if (book.Titulo === titleinput) {
+					book.Autor = newauthor;
+				}
+				return book;
+			});
+	}
+	updateBookSinopsis(titleinput: string, newsinopsis: string): void {
+		const book = this.bookbytitle.get(titleinput);
+		if (book) {
+			book.Sinopsis = newsinopsis;
+			this.bookbytitle.put(titleinput, book);
+		}
+
+		if (this.AllBooks)
+			this.AllBooks = this.AllBooks.map((book) => {
+				if (book.Titulo === titleinput) {
+					book.Sinopsis = newsinopsis;
+				}
+				return book;
+			});
+	}
+	updateBookPages(titleinput: string, newpages: number): void {
+		const book = this.bookbytitle.get(titleinput);
+		if (book) {
+			book.Paginas = newpages;
+			this.bookbytitle.put(titleinput, book);
+		}
+		if (this.AllBooks)
+			this.AllBooks = this.AllBooks.map((book) => {
+				if (book.Titulo === titleinput) {
+					book.Paginas = newpages;
+				}
+				return book;
+			});
+	}
+	updateBookImage(titleinput: string, newimage: ArrayBuffer): void {
+		const book = this.bookbytitle.get(titleinput);
+		if (book) {
+			book.Imagen = newimage;
+			this.bookbytitle.put(titleinput, book);
+		}
+		if (this.AllBooks)
+			this.AllBooks = this.AllBooks.map((book) => {
+				if (book.Titulo === titleinput) {
+					book.Imagen = newimage;
+				}
+				return book;
+			});
+	}
+	updateBookGenres(titleinput: string, newgenres: string[]): void {
+		const book = this.bookbytitle.get(titleinput);
+		if (book) {
+			book.Generos = newgenres;
+			this.bookbytitle.put(titleinput, book);
+		}
+		if (this.AllBooks)
+			this.AllBooks = this.AllBooks.map((book) => {
+				if (book.Titulo === titleinput) {
+					book.Generos = newgenres;
+				}
+				return book;
+			});
+	}
 
 	updateCachesDelete(title: string): void {
 		this.bookbytitle.delete(title);
