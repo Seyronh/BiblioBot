@@ -6,6 +6,7 @@ import {
 	ButtonInteraction,
 	ButtonStyle,
 	CommandInteractionOptionResolver,
+	EmbedBuilder,
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
@@ -70,8 +71,8 @@ const comando: Command = {
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			leido,
 			enprgroeso,
-			planeandoleer
-			//similares
+			planeandoleer,
+			similares
 		);
 		await interaction.editReply({
 			embeds: [embed],
@@ -93,7 +94,6 @@ const comando: Command = {
 			value: candidato,
 		}));
 		try {
-			// @ts-ignore
 			await interaction.respond(mapeado);
 		} catch (error) {}
 		return;
@@ -111,7 +111,126 @@ const comando: Command = {
 			);
 		} else if (interaction.customId === "leido") {
 			await handleBookInteraction(interaction, "Libro marcado como leido");
+		} else if (interaction.customId === "similares") {
+			await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+			await handleSimilares(interaction);
+		} else if (interaction.customId.split("|")[0] === "Similares") {
+			await interaction.deferUpdate();
+			const partes = interaction.message.embeds[0].footer.text.split(" | ");
+			if (partes[1].split(" ")[1] !== interaction.user.id) return;
+			const boton = interaction.customId.split("|")[1];
+			const titulo = partes[2];
+			const libroTexto = partes[0];
+			const libro = libroTexto.split(" ")[1];
+			const dividido = libro.split("/");
+			let libroactual = parseInt(dividido[0]);
+			const libromaximo = parseInt(dividido[1]);
+			if (boton === "siguiente") {
+				if (libroactual < libromaximo) {
+					libroactual++;
+				}
+			} else if (boton === "atras") {
+				if (libroactual > 1) {
+					libroactual--;
+				}
+			}
+			await responder(interaction, libroactual - 1, titulo);
 		}
 	},
 };
 export default comando;
+
+async function responder(
+	interaction: ButtonInteraction,
+	libroactual: number,
+	titulo: string
+) {
+	const tempEmbed = new EmbedBuilder(interaction.message.embeds[0]);
+	const footer = tempEmbed.data.footer.text;
+	const footerSplited = footer.split(" | ");
+	if (footerSplited[1].trim().split(" ")[1] !== interaction.user.id) return;
+	const book = await db.getBookByTitle(titulo);
+	const similares = await db.getSimilarBooks(book);
+
+	const embed = bookembed(
+		similares[libroactual],
+		`Libro: ${libroactual + 1}/${similares.length} | userid: ${
+			interaction.user.id
+		} | ${titulo}`,
+		await db.getNotaMedia(similares[libroactual].Titulo)
+	);
+	const imageBuffer = Buffer.from(similares[libroactual].Imagen);
+	const attachment = new AttachmentBuilder(imageBuffer, {
+		name: `imagen.jpg`,
+	});
+	const atras = new ButtonBuilder()
+		.setCustomId(`${comando.data.name}|Similares|atras`)
+		.setLabel("Anterior")
+		.setStyle(ButtonStyle.Secondary)
+		.setDisabled(libroactual === 0);
+	const siguiente = new ButtonBuilder()
+		.setCustomId(`${comando.data.name}|Similares|siguiente`)
+		.setLabel("Siguiente")
+		.setStyle(ButtonStyle.Success)
+		.setDisabled(libroactual === similares.length - 1);
+	const row = new ActionRowBuilder<ButtonBuilder>().addComponents([
+		atras,
+		siguiente,
+	]);
+	await interaction.editReply({
+		embeds: [embed],
+		files: [attachment],
+		components: [row],
+	});
+}
+
+async function handleSimilares(interaction: ButtonInteraction) {
+	const title = interaction.message.embeds[0].title;
+	if (!title) {
+		await interaction.editReply({
+			content: "Libro no encontrado",
+		});
+		return;
+	}
+	const book = await db.getBookByTitle(title);
+	if (!book) {
+		await interaction.editReply({
+			content: "Libro no encontrado",
+		});
+		return;
+	}
+	const similares = await db.getSimilarBooks(book);
+	if (!similares) {
+		await interaction.editReply({
+			content: "No se encontraron libros similares",
+		});
+		return;
+	}
+	const embed = bookembed(
+		similares[0],
+		`Libro: 1/${similares.length} | userid: ${interaction.user.id} | ${title}`,
+		await db.getNotaMedia(similares[0].Titulo)
+	);
+	const imageBuffer = Buffer.from(similares[0].Imagen);
+	const attachment = new AttachmentBuilder(imageBuffer, {
+		name: `imagen.jpg`,
+	});
+	const atras = new ButtonBuilder()
+		.setCustomId(`${comando.data.name}|Similares|atras`)
+		.setLabel("Anterior")
+		.setStyle(ButtonStyle.Secondary)
+		.setDisabled(true);
+	const siguiente = new ButtonBuilder()
+		.setCustomId(`${comando.data.name}|Similares|siguiente`)
+		.setLabel("Siguiente")
+		.setStyle(ButtonStyle.Success);
+	const row = new ActionRowBuilder<ButtonBuilder>().addComponents([
+		atras,
+		siguiente,
+	]);
+	await interaction.editReply({
+		embeds: [embed],
+		files: [attachment],
+		components: [row],
+	});
+}

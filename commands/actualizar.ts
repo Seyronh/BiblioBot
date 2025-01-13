@@ -130,6 +130,7 @@ const comando: Command = {
 				)
 		) as SlashCommandBuilder,
 	execute: async (interaction) => {
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 		if (!hasRole(interaction, Roles.Moderador)) {
 			await interaction.editReply({
 				content: "No tienes permiso para usar este comando",
@@ -142,7 +143,6 @@ const comando: Command = {
 		const titulo = interactionOptions.getString("titulo");
 		const book = await db.getBookByTitle(titulo);
 		if (!book) {
-			await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 			await interaction.editReply({
 				content: "Libro no encontrado",
 			});
@@ -150,31 +150,24 @@ const comando: Command = {
 		}
 		switch (subcommand) {
 			case "titulo":
-				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 				await cambiarTitulo(interaction, titulo);
 				break;
 			case "autor":
-				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 				await cambiarAutor(interaction, titulo);
 				break;
 			case "sinopsis":
-				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 				await cambiarSinopsis(interaction, titulo);
 				break;
 			case "paginas":
-				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 				await cambiarPaginas(interaction, titulo);
 				break;
 			case "imagen":
-				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 				await cambiarImagen(interaction, titulo);
 				break;
 			case "generos":
-				await interaction.deferReply();
 				await cambiarGeneros(interaction, titulo);
 				break;
 			default:
-				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 				await interaction.editReply({
 					content: "Comando no reconocido",
 				});
@@ -348,19 +341,15 @@ async function cambiarGeneros(interaction: CommandInteraction, titulo: string) {
 	});
 }
 async function handleContinuarButton(interaction: ButtonInteraction) {
-	await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+	await interaction.deferUpdate();
 	if (interaction.user.id !== interaction.customId.split("|")[1]) return;
 	const generos = extraerGeneros(interaction.message.content);
 	await db.updateBookGenres(
 		interaction.message.content.split("|")[1],
 		generos.split(",")
 	);
-	const channel = (await interaction.client.channels.fetch(
-		interaction.channelId
-	)) as TextChannel;
-	const message = await channel.messages.fetch(interaction.message.id);
-	if (message.deletable) message.delete();
 	await interaction.editReply({
 		content: `Generos actualizados con exito`,
+		components: [],
 	});
 }

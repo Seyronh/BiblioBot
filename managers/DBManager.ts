@@ -78,7 +78,7 @@ export class DBManager {
 	}
 	public async getSimilarBooks(
 		book: Book,
-		excludedTitles: string[]
+		excludedTitles: string[] = []
 	): Promise<Book[]> {
 		const alltext = `Titulo: ${book.Titulo}\nSinopsis: ${book.Sinopsis}\nAutor: ${book.Autor}\nGeneros: ${book.Generos}\nPaginas: ${book.Paginas}`;
 		const similarTitles = await this.pineconemanager.query(alltext, {
@@ -95,6 +95,9 @@ export class DBManager {
 			);
 		}
 		return similarbooks;
+	}
+	public async titleLeidosOLeyendo(userid: string) {
+		return await this.sqlmanager.titleLeidosOLeyendo(userid);
 	}
 	public async removeBook(title: string) {
 		const uno = this.pineconemanager.delete(title);
