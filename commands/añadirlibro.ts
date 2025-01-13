@@ -12,18 +12,20 @@ import {
 	TextChannel,
 	AttachmentBuilder,
 	ButtonInteraction,
-	StringSelectMenuOptionBuilder,
 	StringSelectMenuBuilder,
 	StringSelectMenuInteraction,
-	SelectMenuBuilder,
-	ButtonComponent,
 	ModalSubmitInteraction,
 } from "discord.js";
 import { Book, Command, Roles } from "../types";
 import { canal_sugerencias } from "../config.json";
-import { bookembed, hasRole } from "../utils";
+import {
+	bookembed,
+	hasRole,
+	createMenuGenerosOptions,
+	extraerGeneros,
+	insertTextInMiddle,
+} from "../utils";
 import { DBManager, BookEventManager } from "../managers";
-import { generosDisponibles } from "../config.json";
 
 const db = DBManager.getInstance();
 
@@ -73,7 +75,7 @@ const comando: Command = {
 			.setPlaceholder("Elige los generos del libro")
 			.setMinValues(1)
 			.setMaxValues(25)
-			.addOptions(createMenuOptions());
+			.addOptions(createMenuGenerosOptions());
 		const botonContinuar = new ButtonBuilder()
 			.setCustomId(`${comando.data.name}|Continuar|${interaction.user.id}`)
 			.setLabel("Continuar")
@@ -128,12 +130,13 @@ const comando: Command = {
 export default comando;
 
 async function handleContinuarButton(interaction: ButtonInteraction) {
+	if (interaction.user.id !== interaction.customId.split("|")[1]) return;
 	const message = interaction.message;
 	const titleImageLine = message.content.split("\n");
 	const titleImage = titleImageLine[2].split("|");
 	const title = titleImage[1];
 	const image = titleImage[2];
-	const generos = extraerGeneros(interaction.message.content);
+	const generos = extraerGeneros(message.content);
 	const modal = createModal();
 
 	// @ts-ignore
@@ -150,27 +153,6 @@ async function handleContinuarButton(interaction: ButtonInteraction) {
 		.catch((err) => {
 			console.log(err);
 		});
-}
-
-function insertTextInMiddle(text: string, middleText: string) {
-	const partes = text.split("\n");
-	return `${partes[0]}\n${middleText}\n${partes[2]}`;
-}
-function extraerGeneros(text: String) {
-	const partes = text.split("\n");
-	return partes[1].split(": ")[1];
-}
-function createMenuOptions() {
-	const options: StringSelectMenuOptionBuilder[] = [];
-	for (let i = 0; i < 25; i++) {
-		const genero = generosDisponibles[i];
-		options.push(
-			new StringSelectMenuOptionBuilder()
-				.setLabel(`${genero}`)
-				.setValue(`${genero}`)
-		);
-	}
-	return options;
 }
 
 // Function to create the modal for adding a book
