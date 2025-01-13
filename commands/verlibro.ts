@@ -93,7 +93,6 @@ const comando: Command = {
 			value: candidato,
 		}));
 		try {
-			// @ts-ignore
 			await interaction.respond(mapeado);
 		} catch (error) {}
 		return;
