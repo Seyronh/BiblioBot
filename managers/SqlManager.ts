@@ -141,6 +141,7 @@ export class SqlManager {
 			args: [userid, title, estado],
 		});
 		dbcache.saveExistsList(userid, true);
+		dbcache.resetList(userid);
 		return;
 	}
 	public async getList(
@@ -288,5 +289,14 @@ export class SqlManager {
 			args: [newgenres.join(","), titleinput],
 		});
 		dbcache.updateBookGenres(titleinput, newgenres);
+	}
+	public async titleLeidosOLeyendo(userid: string) {
+		const listas = await this.database.execute({
+			sql: `SELECT TituloLibro FROM Listas WHERE userID = ? AND (Estado = 1 OR Estado = 0)`,
+			args: [userid],
+		});
+		return listas.rows.map((e) => {
+			return e.TituloLibro;
+		}) as string[];
 	}
 }
