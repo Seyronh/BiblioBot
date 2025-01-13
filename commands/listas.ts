@@ -100,7 +100,7 @@ async function responder(
 		book,
 		`Libro: ${libro + 1}/${books.length} | Pagina: ${
 			pagina + 1
-		}/${paginastotal}`,
+		}/${paginastotal} | userid: ${interaction.user.id}`,
 		await db.getNotaMedia(book.Titulo),
 		await db.getPaginasLeidas(interaction.user.id, book.Titulo),
 		await db.getNota(interaction.user.id, book.Titulo)
@@ -316,7 +316,9 @@ const comando: Command = {
 					await responder(interaction, libroactual, paginactual, partes[0]);
 				}
 			}
-		} catch (error) {}
+		} catch (error) {
+			console.error(error);
+		}
 	},
 	selectMenu: async (interaction: StringSelectMenuInteraction) => {
 		const partes = interaction.customId.split("|");

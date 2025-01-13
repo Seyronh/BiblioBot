@@ -109,6 +109,9 @@ export class SqlCache {
 	): void {
 		this.List.put(`${userid}|${offset}|${estado}`, list);
 	}
+	resetList(userid: string) {
+		this.List.deleteAll(new RegExp(`${userid}\\|`));
+	}
 
 	getPaginasLeidas(userID: string, title: string): number {
 		return this.paginasLeidas.get(`${userID}|${title}`);
