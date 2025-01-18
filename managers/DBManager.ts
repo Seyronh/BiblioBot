@@ -148,6 +148,12 @@ export class DBManager {
 	): Promise<string[]> {
 		return await this.sqlmanager.getList(userid, offset, estado);
 	}
+	public async getListNoOffset(
+		userid: string,
+		estado: number
+	): Promise<string[]> {
+		return await this.sqlmanager.getListNoOffset(userid, estado);
+	}
 	public async getListCount(userid: string, estado: number) {
 		return await this.sqlmanager.getListCount(userid, estado);
 	}
@@ -173,5 +179,17 @@ export class DBManager {
 	}
 	public async deleteNota(userid: string, title: string) {
 		await this.sqlmanager.deleteNota(userid, title);
+	}
+	public async getEmbedding(title: string) {
+		return await this.pineconemanager.getEmbedding(title);
+	}
+	public async getEmbeddings(titles: string[]) {
+		return await this.pineconemanager.getEmbeddings(titles);
+	}
+	public async getAllIds(): Promise<string[]> {
+		return await this.sqlmanager.getAllIds();
+	}
+	public async getTitleNotaPairs() {
+		return await this.sqlmanager.getTitleNotaPairs();
 	}
 }
