@@ -5,7 +5,9 @@ import { PineconeCache } from "../caches";
 const removeAccents = (str) => {
 	return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 };
-
+const removeSpaces = (str) => {
+	return str.replaceAll(" ", "-");
+};
 const cache = PineconeCache.getInstance();
 
 export class PineconeManager {
@@ -50,7 +52,7 @@ export class PineconeManager {
 		const alltext = `Titulo: ${book.Titulo}\nSinopsis: ${book.Sinopsis}\nAutor: ${book.Autor}\nGeneros: ${book.Generos}\nPaginas: ${book.Paginas}`;
 		await this.index.namespace(process.env.PINECONE_NAMESPACE).upsert([
 			{
-				id: removeAccents(book.Titulo),
+				id: removeSpaces(removeAccents(book.Titulo)),
 				values: await this.embedPassage(alltext),
 				metadata: { titulo: book.Titulo, text: alltext },
 			},
@@ -69,15 +71,34 @@ export class PineconeManager {
 	async fetch(title: string) {
 		const cacheResult = cache.fetch(title);
 		if (cacheResult) return cacheResult;
-		const results = await this.index.fetch([removeAccents(title)]);
+		const results = await this.index
+			.namespace(process.env.PINECONE_NAMESPACE)
+			.fetch([removeSpaces(removeAccents(title))]);
 		cache.saveFetch(title, results);
 		return results;
+	}
+	async fetchMultiple(titles: string[]) {
+		const promises = [];
+		for (let i = 0; i < titles.length; i++) {
+			promises.push(this.fetch(titles[i]));
+		}
+		const results = await Promise.all(promises);
+		return results;
+	}
+	async getEmbedding(title: string) {
+		const data = await this.fetch(title);
+		return data.records[removeSpaces(removeAccents(title))].values;
+	}
+	async getEmbeddings(titles: string[]) {
+		const data = await this.fetchMultiple(titles);
+		const result = data.map((e) => e.records[Object.keys(e.records)[0]].values);
+		return result;
 	}
 	async delete(title: string) {
 		cache.delete(title);
 		await this.index
 			.namespace(process.env.PINECONE_NAMESPACE)
-			.deleteOne(removeAccents(title));
+			.deleteOne(removeSpaces(removeAccents(title)));
 	}
 	async updateBook(titleinput: string, Book: Book) {
 		const uno = this.delete(titleinput);

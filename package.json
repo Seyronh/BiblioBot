@@ -4,7 +4,9 @@
 	"description": "",
 	"main": "index.ts",
 	"scripts": {
-		"test": "bun test"
+		"test": "bun test",
+		"trainAutoencoder": "bun ai/trainautoencoder.ts",
+		"trainRecommender": "bun ai/trainrecommender.ts"
 	},
 	"keywords": [],
 	"author": "",
@@ -12,10 +14,14 @@
 	"dependencies": {
 		"@libsql/client": "^0.14.0",
 		"@pinecone-database/pinecone": "^4.1.0",
+		"@tensorflow/tfjs-node": "^4.22.0",
 		"discord.js": "^14.16.3"
 	},
 	"devDependencies": {
 		"@types/bun": "^1.1.15",
 		"@types/node": "^22.10.2"
-	}
+	},
+	"trustedDependencies": [
+		"core-js"
+	]
 }
