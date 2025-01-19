@@ -49,7 +49,8 @@ async function responder(
 			content: `No tienes libros ${Estados[estado]}`,
 		});
 		return;
-	} else if (eliminado) {
+	}
+	if (eliminado && books.length == 0) {
 		await interaction.editReply({
 			content: `Ya no te quedan libros ${Estados[estado]}`,
 			embeds: [],
@@ -85,7 +86,8 @@ async function responder(
 		row1.components[0] = ButtonBuilder.from(
 			row1.components[0] as unknown as ButtonComponent
 		).setDisabled(true);
-	} else if (libro + pagina * maxLibrosPorPagina == totallibros - 1) {
+	}
+	if (libro + pagina * maxLibrosPorPagina == totallibros - 1) {
 		// @ts-ignore
 		row1.components[2] = ButtonBuilder.from(
 			row1.components[2] as unknown as ButtonComponent

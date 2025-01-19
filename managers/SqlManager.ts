@@ -152,6 +152,7 @@ export class SqlManager {
 			sql: `DELETE FROM Listas WHERE userID = ? AND TituloLibro = ?`,
 			args: [userid, title],
 		});
+		dbcache.resetList(userid);
 		dbcache.resetExistsList(userid);
 		return;
 	}

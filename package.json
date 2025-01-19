@@ -4,6 +4,7 @@
 	"description": "",
 	"main": "index.ts",
 	"scripts": {
+		"start": "bun index.ts",
 		"test": "bun test",
 		"trainAutoencoder": "bun ai/trainautoencoder.ts",
 		"trainRecommender": "bun ai/trainrecommender.ts"
