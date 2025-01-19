@@ -20,8 +20,8 @@ export async function handleBookInteraction(
 		return;
 	}
 	const state = IndexEstados.indexOf(interaction.customId);
-	await db.markBook(interaction.user.id, title, state);
 	await interaction.editReply({
 		content: sucessMessage,
 	});
+	await db.markBook(interaction.user.id, title, state);
 }

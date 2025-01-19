@@ -1,4 +1,4 @@
-import { AttachmentBuilder, Client } from "discord.js";
+import { AttachmentBuilder, Client, TextChannel } from "discord.js";
 import { Book } from "../types";
 import { canal_eventolibros } from "../config.json";
 import { bookembed } from "../utils";
@@ -24,17 +24,19 @@ export class BookEventManager {
 		if (!this.client) return;
 		this.ConsumeStaged();
 	}
-	private ConsumeStaged() {
+	private async ConsumeStaged() {
 		let eventos = [...this.stagedEvents];
 		this.stagedEvents = [];
+		const Channel: TextChannel = await this.client.channels.fetch(
+			canal_eventolibros
+		);
 		for (const evento of eventos) {
-			const channel = this.client.channels.cache.get(canal_eventolibros);
-			if (channel) {
+			if (Channel) {
 				const imageBuffer = Buffer.from(evento.book.Imagen);
 				const attachment = new AttachmentBuilder(imageBuffer, {
 					name: `imagen.jpg`,
 				});
-				channel.send({
+				Channel.send({
 					content: evento.message,
 					embeds: [
 						bookembed(

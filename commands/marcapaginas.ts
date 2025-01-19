@@ -53,10 +53,11 @@ const comando: Command = {
 			});
 			return;
 		}
-		await db.markPage(interaction.user.id, titulo, pagina);
+
 		await interaction.editReply({
 			content: "Página marcada con exito",
 		});
+		await db.markPage(interaction.user.id, titulo, pagina);
 	},
 	autoComplete: async (interaction: AutocompleteInteraction) => {
 		const interactionOptions =
@@ -110,14 +111,7 @@ export default comando;
 
 // Function to validate the pagina input
 function validatePagina(pagina: number, totalPaginas: number): string | null {
-	if (isNaN(pagina)) {
-		return "Página no valida";
-	}
-	if (pagina < 0) {
-		return "Página no valida debe ser un numero positivo";
-	}
-	if (pagina > totalPaginas) {
-		return `Página no valida debe ser menor o igual que el total de paginas del libro en este caso ${totalPaginas} páginas`;
-	}
-	return null;
+	return isNaN(pagina) || pagina < 0 || pagina > totalPaginas
+		? `Página no valida (debe ser un numero entre 1 y ${totalPaginas})`
+		: null;
 }

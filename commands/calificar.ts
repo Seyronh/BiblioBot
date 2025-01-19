@@ -61,10 +61,10 @@ const comando: Command = {
 			});
 			return;
 		}
-		await db.setNota(interaction.user.id, titulo, nota);
 		await interaction.editReply({
 			content: "Nota puesta con exito",
 		});
+		await db.setNota(interaction.user.id, titulo, nota);
 	},
 	autoComplete: async (interaction: AutocompleteInteraction) => {
 		const interactionOptions =
