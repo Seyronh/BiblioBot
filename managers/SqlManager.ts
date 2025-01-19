@@ -155,6 +155,7 @@ export class SqlManager {
 			args: [userid, title],
 		});
 		dbcache.resetList(userid);
+		dbcache.resetListNoOffset(userid);
 		dbcache.resetExistsList(userid);
 		return;
 	}
@@ -165,6 +166,7 @@ export class SqlManager {
 		});
 		dbcache.saveExistsList(userid, true);
 		dbcache.resetList(userid);
+		dbcache.resetListNoOffset(userid);
 		return;
 	}
 	public async getList(
