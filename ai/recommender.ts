@@ -10,7 +10,7 @@ class Recommender {
 		return Recommender.instance;
 	}
 	constructor() {
-		this.capas = [1218, 609, 304, 152, 76, 38, 19, 1];
+		this.capas = [1218, 304, 76, 19, 1];
 		this.modelo = this.createModelo();
 		this.compile();
 	}
