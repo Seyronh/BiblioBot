@@ -8,7 +8,7 @@ export class AutoencoderCache {
 		| Float32Array<ArrayBufferLike>
 		| Int32Array<ArrayBufferLike>
 		| Uint8Array<ArrayBufferLike>,
-		tf.Tensor
+		any
 	> = new LRUCache(maxCacheSize);
 
 	public static getInstance(): AutoencoderCache {
@@ -21,10 +21,12 @@ export class AutoencoderCache {
 
 	public getEncoded(input: tf.Tensor): tf.Tensor | undefined {
 		const entrada = input.dataSync();
-		return this.encoded.get(entrada);
+		const result = this.encoded.get(entrada);
+		if (result) return tf.tensor(result);
+		return;
 	}
 
 	public saveEncoded(input: tf.Tensor, output: tf.Tensor) {
-		this.encoded.put(input.dataSync(), output);
+		this.encoded.put(input.dataSync(), output.arraySync());
 	}
 }
