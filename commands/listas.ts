@@ -49,8 +49,7 @@ async function responder(
 			content: `No tienes libros ${Estados[estado]}`,
 		});
 		return;
-	}
-	if (eliminado && books.length == 0) {
+	} else if (eliminado && books.length == 0) {
 		await interaction.editReply({
 			content: `Ya no te quedan libros ${Estados[estado]}`,
 			embeds: [],
@@ -98,14 +97,19 @@ async function responder(
 	const attachment = new AttachmentBuilder(imageBuffer, {
 		name: `imagen.jpg`,
 	});
+	const [notaMedia, PaginasLeidas, NotaPersonal] = await Promise.all([
+		db.getNotaMedia(book.Titulo),
+		db.getPaginasLeidas(interaction.user.id, book.Titulo),
+		db.getNota(interaction.user.id, book.Titulo),
+	]);
 	const embednuevo = bookembed(
 		book,
 		`Libro: ${libro + 1}/${books.length} | Pagina: ${
 			pagina + 1
 		}/${paginastotal} | userid: ${interaction.user.id}`,
-		await db.getNotaMedia(book.Titulo),
-		await db.getPaginasLeidas(interaction.user.id, book.Titulo),
-		await db.getNota(interaction.user.id, book.Titulo)
+		notaMedia,
+		PaginasLeidas,
+		NotaPersonal
 	);
 	const row2 = interaction.message.components[1];
 	const selectmenu = StringSelectMenuBuilder.from(
@@ -184,12 +188,17 @@ const comando: Command = {
 		});
 		const totallibros = await db.getListCount(interaction.user.id, estado);
 		const paginastotal = Math.ceil(totallibros / maxLibrosPorPagina);
+		const [notaMedia, PaginasLeidas, NotaPersonal] = await Promise.all([
+			db.getNotaMedia(book.Titulo),
+			db.getPaginasLeidas(interaction.user.id, book.Titulo),
+			db.getNota(interaction.user.id, book.Titulo),
+		]);
 		const embed = bookembed(
 			book,
 			`Libro: 1/${books.length} | Pagina: 1/${paginastotal} | userid: ${interaction.user.id}`,
-			await db.getNotaMedia(book.Titulo),
-			await db.getPaginasLeidas(interaction.user.id, book.Titulo),
-			await db.getNota(interaction.user.id, book.Titulo)
+			notaMedia,
+			PaginasLeidas,
+			NotaPersonal
 		);
 		const atras = new ButtonBuilder()
 			.setCustomId(`${comando.data.name}|${categorialista}|atras`)

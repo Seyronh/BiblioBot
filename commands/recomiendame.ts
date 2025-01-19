@@ -51,9 +51,11 @@ export default comando;
 
 async function similares(interaction: CommandInteraction) {
 	const id = interaction.user.id;
-	const leidos = await db.getListNoOffset(id, 0);
-	const leyendo = await db.getListNoOffset(id, 1);
-	const planeandoleer = await db.getListNoOffset(id, 2);
+	const [leidos, leyendo, planeandoleer] = await Promise.all([
+		db.getListNoOffset(id, 0),
+		db.getListNoOffset(id, 1),
+		db.getListNoOffset(id, 2),
+	]);
 	const filtroBooks = [...leidos, ...leyendo, ...planeandoleer];
 	let buscar = leidos;
 	if (buscar.length == 0) buscar = leyendo;

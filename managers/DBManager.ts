@@ -19,9 +19,10 @@ export class DBManager {
 		return await this.sqlmanager.getAllBooks();
 	}
 	public async insertBook(book: Book) {
-		const uno = this.sqlmanager.insertBook(book);
-		const dos = this.pineconemanager.insertBook(book);
-		await Promise.all([uno, dos]);
+		await Promise.all([
+			this.sqlmanager.insertBook(book),
+			this.pineconemanager.insertBook(book),
+		]);
 		return;
 	}
 	public async existsBook(title: string): Promise<Boolean> {
@@ -33,33 +34,37 @@ export class DBManager {
 	public async updateBookTitle(titleinput: string, newtitle: string) {
 		const book = await this.getBookByTitle(titleinput);
 		book.Titulo = newtitle;
-		const uno = this.pineconemanager.updateBook(titleinput, book);
-		const dos = this.sqlmanager.updateBookTitle(titleinput, newtitle);
-		await Promise.all([uno, dos]);
+		await Promise.all([
+			this.pineconemanager.updateBook(titleinput, book),
+			this.sqlmanager.updateBookTitle(titleinput, newtitle),
+		]);
 		return;
 	}
 	public async updateBookAuthor(titleinput: string, newauthor: string) {
 		const book = await this.getBookByTitle(titleinput);
 		book.Autor = newauthor;
-		const uno = this.pineconemanager.updateBook(titleinput, book);
-		const dos = this.sqlmanager.updateBookAuthor(titleinput, newauthor);
-		await Promise.all([uno, dos]);
+		await Promise.all([
+			this.pineconemanager.updateBook(titleinput, book),
+			this.sqlmanager.updateBookAuthor(titleinput, newauthor),
+		]);
 		return;
 	}
 	public async updateBookSinopsis(titleinput: string, newsinopsis: string) {
 		const book = await this.getBookByTitle(titleinput);
 		book.Sinopsis = newsinopsis;
-		const uno = this.pineconemanager.updateBook(titleinput, book);
-		const dos = this.sqlmanager.updateBookSinopsis(titleinput, newsinopsis);
-		await Promise.all([uno, dos]);
+		await Promise.all([
+			this.pineconemanager.updateBook(titleinput, book),
+			this.sqlmanager.updateBookSinopsis(titleinput, newsinopsis),
+		]);
 		return;
 	}
 	public async updateBookPages(titleinput: string, newpages: number) {
 		const book = await this.getBookByTitle(titleinput);
 		book.Paginas = newpages;
-		const uno = this.pineconemanager.updateBook(titleinput, book);
-		const dos = this.sqlmanager.updateBookPages(titleinput, newpages);
-		await Promise.all([uno, dos]);
+		await Promise.all([
+			this.pineconemanager.updateBook(titleinput, book),
+			this.sqlmanager.updateBookPages(titleinput, newpages),
+		]);
 		return;
 	}
 	public async updateBookImage(titleinput: string, newimage: ArrayBuffer) {
@@ -71,9 +76,10 @@ export class DBManager {
 	public async updateBookGenres(titleinput: string, newgenres: string[]) {
 		const book = await this.getBookByTitle(titleinput);
 		book.Generos = newgenres;
-		const uno = this.pineconemanager.updateBook(titleinput, book);
-		const dos = this.sqlmanager.updateBookGenres(titleinput, newgenres);
-		await Promise.all([uno, dos]);
+		await Promise.all([
+			this.pineconemanager.updateBook(titleinput, book),
+			this.sqlmanager.updateBookGenres(titleinput, newgenres),
+		]);
 		return;
 	}
 	public async getSimilarBooks(
@@ -88,21 +94,23 @@ export class DBManager {
 				titulo: { $nin: excludedTitles.concat([book.Titulo]) },
 			},
 		});
-		let similarbooks: Book[] = [];
+		const promesas = [];
 		for (let i = 0; i < similarTitles.matches.length; i++) {
-			similarbooks.push(
-				await this.getBookByTitle(similarTitles.matches[i].metadata.titulo)
+			promesas.push(
+				this.getBookByTitle(similarTitles.matches[i].metadata.titulo)
 			);
 		}
+		const similarbooks = await Promise.all(promesas);
 		return similarbooks;
 	}
 	public async titleLeidosOLeyendo(userid: string) {
 		return await this.sqlmanager.titleLeidosOLeyendo(userid);
 	}
 	public async removeBook(title: string) {
-		const uno = this.pineconemanager.delete(title);
-		const dos = this.sqlmanager.removeBook(title);
-		await Promise.all([uno, dos]);
+		await Promise.all([
+			this.pineconemanager.delete(title),
+			this.sqlmanager.removeBook(title),
+		]);
 		return;
 	}
 	public async getRandomBooks(samples: number): Promise<Book[]> {

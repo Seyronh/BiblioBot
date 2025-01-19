@@ -91,14 +91,16 @@ export class SqlManager {
 		return exists;
 	}
 	public async removeBook(title: string) {
-		await this.database.execute({
-			sql: `DELETE FROM Libros WHERE Titulo = ?`,
-			args: [title],
-		});
-		await this.database.execute({
-			sql: `DELETE FROM Listas WHERE TituloLibro = ?`,
-			args: [title],
-		});
+		await Promise.all([
+			this.database.execute({
+				sql: `DELETE FROM Libros WHERE Titulo = ?`,
+				args: [title],
+			}),
+			this.database.execute({
+				sql: `DELETE FROM Listas WHERE TituloLibro = ?`,
+				args: [title],
+			}),
+		]);
 		dbcache.updateCachesDelete(title);
 		return;
 	}
@@ -276,15 +278,16 @@ export class SqlManager {
 		return;
 	}
 	public async updateBookTitle(titleinput: string, newtitle: string) {
-		const update1 = this.database.execute({
-			sql: `UPDATE Libros SET Titulo = ? WHERE Titulo = ?`,
-			args: [newtitle, titleinput],
-		});
-		const update2 = this.database.execute({
-			sql: `UPDATE Listas SET TituloLibro = ? WHERE TituloLibro = ?`,
-			args: [newtitle, titleinput],
-		});
-		await Promise.all([update1, update2]);
+		await Promise.all([
+			this.database.execute({
+				sql: `UPDATE Libros SET Titulo = ? WHERE Titulo = ?`,
+				args: [newtitle, titleinput],
+			}),
+			this.database.execute({
+				sql: `UPDATE Listas SET TituloLibro = ? WHERE TituloLibro = ?`,
+				args: [newtitle, titleinput],
+			}),
+		]);
 		dbcache.updateBookTitle(titleinput, newtitle);
 	}
 	public async updateBookAuthor(titleinput: string, newauthor: string) {
