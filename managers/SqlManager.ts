@@ -185,6 +185,8 @@ export class SqlManager {
 		return list;
 	}
 	public async getListNoOffset(userid: string, estado: number) {
+		const cache = dbcache.getListNoOffset(userid, estado);
+		if (cache) return cache;
 		const listas = await this.database.execute({
 			sql: `SELECT TituloLibro FROM Listas WHERE userID = ? AND Estado = ?`,
 			args: [userid, estado],

@@ -1,4 +1,5 @@
 import tf from "@tensorflow/tfjs-node";
+
 class Recommender {
 	private capas: Array<number>;
 	private modelo: tf.Sequential;
