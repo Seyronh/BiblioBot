@@ -1,5 +1,6 @@
 import tf from "@tensorflow/tfjs-node";
-
+import { AutoencoderCache } from "../caches";
+const cache = AutoencoderCache.getInstance();
 class AutoEncoder {
 	private capas: Array<number>;
 	private encoder: tf.Sequential;
@@ -72,6 +73,8 @@ class AutoEncoder {
 		});
 	}
 	async encode(data: tf.Tensor) {
+		const result = cache.getEncoded(data);
+		if (result) return result;
 		return this.encoder.predict(data);
 	}
 	async decode(data: tf.Tensor) {

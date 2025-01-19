@@ -119,7 +119,7 @@ async function inteligente(interaction: CommandInteraction) {
 		const salida = (await recommender.predict(
 			entrada.reshape([1, 1218])
 		)) as tf.Tensor;
-		const notaPredecida = salida.arraySync()[0][0];
+		const notaPredecida = salida.dataSync()[0];
 		if (notaPredecida > 0.5) {
 			posibles.push({ libro: book, nota: notaPredecida });
 		}

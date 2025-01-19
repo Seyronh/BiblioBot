@@ -10,6 +10,7 @@ export class SqlCache {
 	private existslist: LRUCache<string, boolean>;
 	private ListCount: LRUCache<string, number>;
 	private List: LRUCache<string, string[]>;
+	private ListNoOffset: LRUCache<string, string[]>;
 	private existslistBook: LRUCache<string, boolean>;
 	private paginasLeidas: LRUCache<string, number>;
 	private nota: LRUCache<string, number>;
@@ -23,7 +24,7 @@ export class SqlCache {
 		return SqlCache.instance;
 	}
 
-	constructor() {
+	private constructor() {
 		this.bookbytitle = new LRUCache(maxCacheSize);
 		this.booksnameautocomplete = new LRUCache(maxCacheSize);
 		this.exitsbook = new LRUCache(maxCacheSize);
@@ -34,6 +35,7 @@ export class SqlCache {
 		this.paginasLeidas = new LRUCache(maxCacheSize);
 		this.nota = new LRUCache(maxCacheSize);
 		this.notaMedia = new LRUCache(maxCacheSize);
+		this.ListNoOffset = new LRUCache(maxCacheSize);
 		this.AllBooks = undefined;
 	}
 
@@ -111,6 +113,16 @@ export class SqlCache {
 	}
 	resetList(userid: string) {
 		this.List.deleteAll(new RegExp(`${userid}\\|`));
+	}
+	getListNoOffset(userid: string, estado: number): string[] {
+		return this.ListNoOffset.get(`${userid}|${estado}`);
+	}
+
+	saveListNoOffset(userid: string, estado: number, list: string[]): void {
+		this.ListNoOffset.put(`${userid}|${estado}`, list);
+	}
+	resetListNoOffset(userid: string) {
+		this.ListNoOffset.deleteAll(new RegExp(`${userid}\\|`));
 	}
 
 	getPaginasLeidas(userID: string, title: string): number {
@@ -241,6 +253,7 @@ export class SqlCache {
 		this.existslist = new LRUCache(maxCacheSize);
 		this.ListCount = new LRUCache(maxCacheSize);
 		this.List = new LRUCache(maxCacheSize);
+		this.ListNoOffset = new LRUCache(maxCacheSize);
 		if (this.AllBooks)
 			this.AllBooks = this.AllBooks.filter((book) => book.Titulo !== title);
 	}
