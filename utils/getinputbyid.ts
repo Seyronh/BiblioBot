@@ -31,6 +31,10 @@ async function getInputById(userid: string): Promise<tf.Tensor> {
 		averageEmbeddingsLeyendo,
 		averageEmbeddingsPlaneando,
 	]);
+	averageEmbeddingsLeidos.dispose();
+	averageEmbeddingsLeyendo.dispose();
+	averageEmbeddingsPlaneando.dispose();
+
 	return entrada;
 }
 async function getInputByTitle(title: string) {
