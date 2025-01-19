@@ -101,7 +101,9 @@ async function inteligente(interaction: CommandInteraction) {
 	]);
 	const id = interaction.user.id;
 	const datosEncoder = await getInputById(id);
-	const encodedPromise = autoencoder.encode(datosEncoder.reshape([1, 3072]));
+	const reshapedDatos = datosEncoder.reshape([1, 3072]);
+	const encodedPromise = autoencoder.encode(reshapedDatos);
+	datosEncoder.dispose();
 	const [leidos, leyendo, planeandoleer] = await Promise.all([
 		db.getListNoOffset(id, 0),
 		db.getListNoOffset(id, 1),
@@ -112,18 +114,23 @@ async function inteligente(interaction: CommandInteraction) {
 	todos = todos.filter((book) => !filtros.includes(book.Titulo));
 	const posibles = [];
 	const encoded = ((await encodedPromise) as tf.Tensor).reshape([194]);
+	reshapedDatos.dispose();
 	for (let i = 0; i < limite && posibles.length < maximo; i++) {
 		const book = todos[Math.floor(Math.random() * todos.length)];
 		const libro = await getInputByTitle(book.Titulo);
 		const entrada = tf.concat([libro, encoded]);
-		const salida = (await recommender.predict(
-			entrada.reshape([1, 1218])
-		)) as tf.Tensor;
+		const reshapedEntrada = entrada.reshape([1, 1218]);
+		const salida = (await recommender.predict(reshapedEntrada)) as tf.Tensor;
 		const notaPredecida = salida.dataSync()[0];
+		salida.dispose();
+		reshapedEntrada.dispose();
+		entrada.dispose();
+		libro.dispose();
 		if (notaPredecida > 0.5) {
 			posibles.push({ libro: book, nota: notaPredecida });
 		}
 	}
+	encoded.dispose();
 	if (posibles.length == 0) {
 		await similares(interaction);
 		return;

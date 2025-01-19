@@ -8,7 +8,7 @@ export class RecommenderCache {
 		| Float32Array<ArrayBufferLike>
 		| Int32Array<ArrayBufferLike>
 		| Uint8Array<ArrayBufferLike>,
-		tf.Tensor
+		any
 	> = new LRUCache(maxCacheSize);
 
 	public static getInstance(): RecommenderCache {
@@ -21,10 +21,12 @@ export class RecommenderCache {
 
 	public getPredict(input: tf.Tensor): tf.Tensor | undefined {
 		const entrada = input.dataSync();
-		return this.predicts.get(entrada);
+		const salida = this.predicts.get(entrada);
+		if (salida) return tf.tensor(salida);
+		return;
 	}
 
 	public savePredict(input: tf.Tensor, output: tf.Tensor) {
-		this.predicts.put(input.dataSync(), output);
+		this.predicts.put(input.dataSync(), output.arraySync());
 	}
 }
