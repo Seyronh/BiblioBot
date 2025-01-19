@@ -7,3 +7,4 @@ export {
 	extraerGeneros,
 	insertTextInMiddle,
 } from "./generos";
+export { getInputById, getInputByTitle } from "./getinputbyid";

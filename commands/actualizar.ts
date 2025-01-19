@@ -10,7 +10,6 @@ import {
 	SlashCommandBuilder,
 	StringSelectMenuBuilder,
 	StringSelectMenuInteraction,
-	TextChannel,
 } from "discord.js";
 import { Command, Roles } from "../types";
 import { DBManager } from "../managers";

@@ -22,6 +22,26 @@ export class SqlManager {
 			authToken: process.env.TURSO_AUTH_TOKEN,
 		});
 	}
+	public async getAllIds(): Promise<string[]> {
+		const result: ResultSet = await this.database.execute(
+			`SELECT DISTINCT userID from Listas`
+		);
+		const resultado: string[] = result.rows.map((e) => e.userID) as string[];
+		return resultado;
+	}
+	public async getTitleNotaPairs() {
+		const result: ResultSet = await this.database.execute(
+			`SELECT userID, TituloLibro, Nota, Estado FROM Listas WHERE Estado = 0 OR Estado = 1`
+		);
+		const resultado = result.rows.map((e) => {
+			return {
+				id: e.userID as string,
+				titulo: e.TituloLibro as string,
+				nota: (e.Nota == null ? (e.Estado == 0 ? 5.2 : 5) : e.Nota) as number,
+			};
+		});
+		return resultado;
+	}
 	public async getAllBooks(): Promise<Book[]> {
 		const cache = dbcache.getAllBooks();
 		if (cache) return cache;
@@ -132,6 +152,7 @@ export class SqlManager {
 			sql: `DELETE FROM Listas WHERE userID = ? AND TituloLibro = ?`,
 			args: [userid, title],
 		});
+		dbcache.resetList(userid);
 		dbcache.resetExistsList(userid);
 		return;
 	}
@@ -159,6 +180,17 @@ export class SqlManager {
 			return e.TituloLibro;
 		}) as string[];
 		dbcache.saveList(userid, offset, estado, list);
+		return list;
+	}
+	public async getListNoOffset(userid: string, estado: number) {
+		const listas = await this.database.execute({
+			sql: `SELECT TituloLibro FROM Listas WHERE userID = ? AND Estado = ?`,
+			args: [userid, estado],
+		});
+		const list = listas.rows.map((e) => {
+			return e.TituloLibro;
+		}) as string[];
+
 		return list;
 	}
 	public async getListCount(userid: string, estado: number) {
@@ -237,7 +269,7 @@ export class SqlManager {
 	}
 	public async deleteNota(userid: string, title: string) {
 		await this.database.execute({
-			sql: `DELETE FROM Listas WHERE userID = ? AND TituloLibro = ?`,
+			sql: `UPDATE Listas SET Nota = NULL WHERE userID = ? AND TituloLibro = ?`,
 			args: [userid, title],
 		});
 		dbcache.deleteNota(userid, title);
