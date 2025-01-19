@@ -101,8 +101,6 @@ export class PineconeManager {
 			.deleteOne(removeSpaces(removeAccents(title)));
 	}
 	async updateBook(titleinput: string, Book: Book) {
-		const uno = this.delete(titleinput);
-		const dos = this.insertBook(Book);
-		await Promise.all([uno, dos]);
+		await Promise.all([this.delete(titleinput), this.insertBook(Book)]);
 	}
 }

@@ -23,14 +23,13 @@ const comando: Command = {
 				.setAutocomplete(true)
 		) as SlashCommandBuilder,
 	execute: async (interaction) => {
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 		if (!hasRole(interaction, Roles.Moderador)) {
-			await interaction.reply({
+			await interaction.editReply({
 				content: "No tienes permiso para usar este comando",
-				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
-		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
 		const id = interactionOptions.getString("busqueda");
@@ -41,15 +40,14 @@ const comando: Command = {
 			});
 			return;
 		}
+		await interaction.editReply({
+			content: "Libro eliminado correctamente",
+		});
 		await db.removeBook(book.Titulo);
 		BookEventManager.getInstance().eventBook(
 			book,
 			`Libro eliminado por <${interaction.user.id}>`
 		);
-		await db.removeBook(id);
-		await interaction.editReply({
-			content: "Libro eliminado correctamente",
-		});
 	},
 	autoComplete: async (interaction: AutocompleteInteraction) => {
 		const interactionOptions =

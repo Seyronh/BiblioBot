@@ -41,12 +41,17 @@ const comando: Command = {
 			});
 			return;
 		}
+		const [notaMedia, paginasLeidas, notaPersonal] = await Promise.all([
+			db.getNotaMedia(book.Titulo),
+			db.getPaginasLeidas(interaction.user.id, book.Titulo),
+			db.getNota(interaction.user.id, book.Titulo),
+		]);
 		const embed = bookembed(
 			book,
 			"Puedes ayudar añadiendo libros con el comando /añadirlibro",
-			await db.getNotaMedia(book.Titulo),
-			await db.getPaginasLeidas(interaction.user.id, book.Titulo),
-			await db.getNota(interaction.user.id, book.Titulo)
+			notaMedia,
+			paginasLeidas,
+			notaPersonal
 		);
 		const imageBuffer = Buffer.from(book.Imagen);
 		const attachment = new AttachmentBuilder(imageBuffer, {

@@ -213,7 +213,7 @@ async function handleModalSubmit(
 	await interactionModal.deferReply({ flags: MessageFlags.Ephemeral });
 	const sinopsis = interactionModal.fields.getTextInputValue("sinopsis");
 	const autor = interactionModal.fields.getTextInputValue("autor");
-	let paginas;
+	let paginas: number;
 	try {
 		paginas = parseInt(
 			interactionModal.fields.getTextInputValue("paginas").trim()
@@ -260,23 +260,29 @@ async function handleModalSubmit(
 		cancel,
 		confirm
 	);
-	const channel = (await interactionButton.client.channels.fetch(
-		interactionButton.channelId
-	)) as TextChannel;
-	const message = await channel.messages.fetch(interactionButton.message.id);
-	if (message.deletable) message.delete();
 	await interactionModal.editReply({
 		content: "Gracias por tu sugerencia",
 	});
-	const Channel = (await interactionModal.client.channels.fetch(
-		canal_sugerencias
-	)) as TextChannel;
-	if (Channel) {
+	const [canalActual, canalSugerencias] = await Promise.all([
+		interactionButton.client.channels.fetch(
+			interactionButton.channelId
+		) as Promise<TextChannel>,
+		interactionModal.client.channels.fetch(
+			canal_sugerencias
+		) as Promise<TextChannel>,
+	]);
+	canalActual.messages
+		.fetch(interactionButton.message.id)
+		.then((messageActual) => {
+			if (messageActual.deletable) messageActual.delete();
+		});
+
+	if (canalSugerencias) {
 		const imageBuffer = Buffer.from(book.Imagen);
 		const attachment = new AttachmentBuilder(imageBuffer, {
 			name: `imagen.jpg`,
 		});
-		await Channel.send({
+		await canalSugerencias.send({
 			embeds: [embed],
 			components: [row],
 			files: [attachment],
@@ -320,8 +326,7 @@ async function handleConfirmButton(interaction) {
 		};
 
 		// Insert the book in the database
-		await db.insertBook(book);
-		await Message.delete();
+		await Promise.all([db.insertBook(book), Message.delete()]);
 		BookEventManager.getInstance().eventBook(
 			book,
 			`Libro Aceptado por <@${interaction.user.id}>`
@@ -331,7 +336,6 @@ async function handleConfirmButton(interaction) {
 
 // Function to handle the cancel button
 async function handleCancelButton(interaction) {
-	// @ts-ignore
 	const Channel: TextChannel = await interaction.client.channels.fetch(
 		interaction.channelId
 	);
