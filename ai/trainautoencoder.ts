@@ -8,7 +8,7 @@ const instancia = DBManager.getInstance();
 
 (async () => {
 	const ids = await instancia.getAllIds();
-	const autoencoder = await AutoEncoder.loadModel("./models/autoencoder");
+	const autoencoder = await AutoEncoder.getInstance();
 	const promesas = [];
 	for (let i = 0; i < ids.length; i++) {
 		promesas.push(getInputById(ids[i]));

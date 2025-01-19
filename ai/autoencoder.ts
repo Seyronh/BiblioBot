@@ -14,7 +14,7 @@ class AutoEncoder {
 	}
 	constructor() {
 		//1024 AVG_READED_EMBEDDING + 1024 AVG_READING_EMBEDDING + 1024 AVG_PLAN_EMBEDDING = 3072
-		this.capas = [3072, 1549, 774, 194];
+		this.capas = [3072, 774, 194];
 		this.encoder = this.createEncoder();
 		this.decoder = this.createDecoder();
 		this.autoencoder = this.createAutoEncoder();
