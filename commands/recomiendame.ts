@@ -51,14 +51,21 @@ export default comando;
 
 async function similares(interaction: CommandInteraction) {
 	const id = interaction.user.id;
-	const [leidos, leyendo, planeandoleer] = await Promise.all([
-		db.getListNoOffset(id, 0),
-		db.getListNoOffset(id, 1),
-		db.getListNoOffset(id, 2),
-	]);
+	const leidos = await db.getListNoOffset(id, 0);
+	const leyendo = await db.getListNoOffset(id, 1);
+	const planeandoleer = await db.getListNoOffset(id, 2);
 	const filtroBooks = [...leidos, ...leyendo, ...planeandoleer];
+	let buscar = leidos;
+	if (buscar.length == 0) buscar = leyendo;
+	if (buscar.length == 0) buscar = planeandoleer;
+	if (buscar.length == 0) {
+		await interaction.editReply({
+			content: "No has leido ningun libro y no podemos sugerirte similares",
+		});
+		return;
+	}
 	const bookInicial = await db.getBookByTitle(
-		leidos[Math.floor(Math.random() * leidos.length)]
+		buscar[Math.floor(Math.random() * buscar.length)]
 	);
 	const books = await db.getSimilarBooks(bookInicial, filtroBooks);
 	if (!books || books.length == 0) {
