@@ -1,0 +1,1 @@
+export { PineconeManager } from "./PineconeManager";

@@ -3,7 +3,7 @@ import { PineconeCache } from "../../caches";
 
 describe("PineconeCache", () => {
 	beforeEach(() => {
-		// @ts-ignore
+		//@ts-ignore
 		PineconeCache.instance = undefined;
 	});
 	it("should return undefined for non-existent embedQuery", () => {

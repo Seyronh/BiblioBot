@@ -5,10 +5,8 @@ import {
 	SlashCommandBuilder,
 } from "discord.js";
 import { Command, Roles } from "../types";
-import { DBManager, BookEventManager } from "../managers";
+import { BookEventManager, BookManager } from "../managers";
 import { hasRole } from "../utils";
-
-const db = DBManager.getInstance();
 
 const comando: Command = {
 	guildOnly: true,
@@ -33,7 +31,7 @@ const comando: Command = {
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
 		const id = interactionOptions.getString("busqueda");
-		const book = await db.getBookByTitle(id);
+		const book = await BookManager.getInstance().getBookByTitle(id);
 		if (!book) {
 			await interaction.editReply({
 				content: "Libro no encontrado",
@@ -43,7 +41,7 @@ const comando: Command = {
 		await interaction.editReply({
 			content: "Libro eliminado correctamente",
 		});
-		await db.removeBook(book.Titulo);
+		await BookManager.getInstance().removeBook(book.Titulo);
 		BookEventManager.getInstance().eventBook(
 			book,
 			`Libro eliminado por <${interaction.user.id}>`
@@ -52,7 +50,7 @@ const comando: Command = {
 	autoComplete: async (interaction: AutocompleteInteraction) => {
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
-		const candidatos = await db.getBooksNameAutocomplete(
+		const candidatos = await BookManager.getInstance().getBooksNameAutocomplete(
 			interactionOptions.getFocused(),
 			true
 		);
@@ -60,7 +58,7 @@ const comando: Command = {
 			name: candidato,
 			value: candidato,
 		}));
-		// @ts-ignore
+
 		await interaction.respond(mapeado);
 	},
 };

@@ -18,7 +18,7 @@ describe("SqlCache", () => {
 			Titulo: "TestTitle",
 			Sinopsis: "TestSinopsis",
 			Autor: "TestAutor",
-			Generos: ["TestGenero"],
+			Generos: "TestGenero",
 			Paginas: 100,
 		};
 		cache.saveBookByTitle("TestTitle", book);
@@ -37,14 +37,14 @@ describe("SqlCache", () => {
 				Titulo: "TestTitle1",
 				Sinopsis: "TestSinopsis1",
 				Autor: "TestAutor1",
-				Generos: ["TestGenero1"],
+				Generos: "TestGenero1",
 				Paginas: 100,
 			},
 			{
 				Titulo: "TestTitle2",
 				Sinopsis: "TestSinopsis2",
 				Autor: "TestAutor2",
-				Generos: ["TestGenero2"],
+				Generos: "TestGenero2",
 				Paginas: 200,
 			},
 		];
@@ -119,26 +119,9 @@ describe("SqlCache", () => {
 		expect(cache.getList("userID", 0, 1)).toEqual(list);
 	});
 
-	it("should return undefined for non-existent paginas leidas", () => {
+	it("should return undefined for non-existent userInfo", () => {
 		const cache = SqlCache.getInstance();
-		expect(cache.getPaginasLeidas("userID", "TestTitle")).toBeUndefined();
-	});
-
-	it("should store and retrieve paginas leidas", () => {
-		const cache = SqlCache.getInstance();
-		cache.savePaginasLeidas("userID", "TestTitle", 10);
-		expect(cache.getPaginasLeidas("userID", "TestTitle")).toEqual(10);
-	});
-
-	it("should return undefined for non-existent nota", () => {
-		const cache = SqlCache.getInstance();
-		expect(cache.getNota("userID", "TestTitle")).toBeUndefined();
-	});
-
-	it("should store and retrieve nota", () => {
-		const cache = SqlCache.getInstance();
-		cache.saveNota("userID", "TestTitle", 10);
-		expect(cache.getNota("userID", "TestTitle")).toEqual(10);
+		expect(cache.getUserBookInfo("userID", "TestTitle")).toBeUndefined();
 	});
 	it("should reset exists list", () => {
 		const cache = SqlCache.getInstance();
@@ -165,21 +148,13 @@ describe("SqlCache", () => {
 		expect(cache.getNotaMedia("TestTitle")).toBeUndefined();
 	});
 
-	it("should delete nota and reset nota media", () => {
-		const cache = SqlCache.getInstance();
-		cache.saveNota("userID", "TestTitle", 10);
-		cache.deleteNota("userID", "TestTitle");
-		expect(cache.getNota("userID", "TestTitle")).toBeUndefined();
-		expect(cache.getNotaMedia("TestTitle")).toBeUndefined();
-	});
-
 	it("should update caches on insert", () => {
 		const cache = SqlCache.getInstance();
 		const book: Book = {
 			Titulo: "TestTitle",
 			Sinopsis: "TestSinopsis",
 			Autor: "TestAutor",
-			Generos: ["TestGenero"],
+			Generos: "TestGenero",
 			Paginas: 100,
 		};
 		cache.updateCachesInsert(book);
@@ -192,7 +167,7 @@ describe("SqlCache", () => {
 			Titulo: "TestTitle",
 			Sinopsis: "TestSinopsis",
 			Autor: "TestAutor",
-			Generos: ["TestGenero"],
+			Generos: "TestGenero",
 			Paginas: 100,
 		};
 		cache.updateCachesDelete(book.Titulo);

@@ -5,9 +5,7 @@ import {
 	SlashCommandBuilder,
 } from "discord.js";
 import { Command } from "../types";
-import { DBManager } from "../managers";
-
-const db = DBManager.getInstance();
+import { BookManager, ListManager } from "../managers";
 
 const comando: Command = {
 	data: new SlashCommandBuilder()
@@ -32,14 +30,19 @@ const comando: Command = {
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
 		const titulo = interactionOptions.getString("título");
-		const book = await db.getBookByTitle(titulo);
+		const book = await BookManager.getInstance().getBookByTitle(titulo);
 		if (!book) {
 			await interaction.editReply({
 				content: "Libro no encontrado",
 			});
 			return;
 		}
-		if (!(await db.existsListBook(interaction.user.id, book.Titulo))) {
+		if (
+			!(await ListManager.getInstance().existsList(
+				interaction.user.id,
+				book.Titulo
+			))
+		) {
 			await interaction.editReply({
 				content: "Libro no encontrado en ninguna lista",
 			});
@@ -57,17 +60,22 @@ const comando: Command = {
 		await interaction.editReply({
 			content: "Página marcada con exito",
 		});
-		await db.markPage(interaction.user.id, titulo, pagina);
+		await ListManager.getInstance().markPage(
+			interaction.user.id,
+			titulo,
+			pagina
+		);
 	},
 	autoComplete: async (interaction: AutocompleteInteraction) => {
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
 		const focusedOption = interactionOptions.getFocused(true);
 		if (focusedOption.name == "título") {
-			const candidatos = await db.getBooksNameAutocomplete(
-				focusedOption.value,
-				true
-			);
+			const candidatos =
+				await BookManager.getInstance().getBooksNameAutocomplete(
+					focusedOption.value,
+					true
+				);
 			const mapeado = candidatos.map((candidato) => ({
 				name: candidato,
 				value: candidato,
@@ -81,7 +89,7 @@ const comando: Command = {
 					await interaction.respond(mapeado);
 				}
 			}, 2000);
-			const book = await db.getBookByTitle(
+			const book = await BookManager.getInstance().getBookByTitle(
 				interactionOptions.getString("título")
 			);
 			if (!book && !interaction.responded) {
