@@ -9,7 +9,7 @@ describe("bookembed", () => {
 			Titulo: "TestTitle",
 			Sinopsis: "TestSinopsis",
 			Autor: "TestAutor",
-			Generos: ["TestGenero"],
+			Generos: "TestGenero",
 			Paginas: 100,
 		};
 		const footer = "TestFooter";
@@ -28,7 +28,7 @@ describe("bookembed", () => {
 		expect(embed.data.description).toBe(book.Sinopsis);
 		expect(embed.data.author.name).toBe(book.Autor);
 		expect(embed.data.fields.length).toBe(5);
-		expect(embed.data.fields[0].value).toBe(book.Generos.join(", "));
+		expect(embed.data.fields[0].value).toBe(book.Generos);
 		expect(embed.data.fields[1].value).toBe(book.Paginas.toString());
 		expect(embed.data.fields[2].value).toBe("5 segun 10 personas");
 		expect(embed.data.fields[3].value).toBe("50");

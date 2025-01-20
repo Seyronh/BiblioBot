@@ -6,12 +6,10 @@ import {
 	SlashCommandBuilder,
 } from "discord.js";
 import { Command } from "../types";
-import { DBManager } from "../managers";
 import { bookembed, getInputById, getInputByTitle } from "../utils";
 import { AutoEncoder, Recommender } from "../ai";
 import tf from "@tensorflow/tfjs-node";
-
-const db = DBManager.getInstance();
+import { BookManager, ListManager } from "../managers";
 
 const comando: Command = {
 	data: new SlashCommandBuilder()
@@ -52,9 +50,9 @@ export default comando;
 async function similares(interaction: CommandInteraction) {
 	const id = interaction.user.id;
 	const [leidos, leyendo, planeandoleer] = await Promise.all([
-		db.getListNoOffset(id, 0),
-		db.getListNoOffset(id, 1),
-		db.getListNoOffset(id, 2),
+		ListManager.getInstance().getList(id, 0),
+		ListManager.getInstance().getList(id, 1),
+		ListManager.getInstance().getList(id, 2),
 	]);
 	const filtroBooks = [...leidos, ...leyendo, ...planeandoleer];
 	let buscar = leidos;
@@ -66,10 +64,13 @@ async function similares(interaction: CommandInteraction) {
 		});
 		return;
 	}
-	const bookInicial = await db.getBookByTitle(
+	const bookInicial = await BookManager.getInstance().getBookByTitle(
 		buscar[Math.floor(Math.random() * buscar.length)]
 	);
-	const books = await db.getSimilarBooks(bookInicial, filtroBooks);
+	const books = await BookManager.getInstance().getSimilarBooks(
+		bookInicial,
+		filtroBooks
+	);
 	if (!books || books.length == 0) {
 		await interaction.editReply({
 			content: "Nos quedan libros por recomendarte",
@@ -84,7 +85,7 @@ async function similares(interaction: CommandInteraction) {
 	const embed = bookembed(
 		book,
 		`Para mas información usa el comando /verlibro | En base a ${bookInicial.Titulo}`,
-		await db.getNotaMedia(book.Titulo)
+		await ListManager.getInstance().getNotaMedia(book.Titulo)
 	);
 	await interaction.editReply({
 		embeds: [embed],
@@ -105,12 +106,12 @@ async function inteligente(interaction: CommandInteraction) {
 	const encodedPromise = autoencoder.encode(reshapedDatos);
 	datosEncoder.dispose();
 	const [leidos, leyendo, planeandoleer] = await Promise.all([
-		db.getListNoOffset(id, 0),
-		db.getListNoOffset(id, 1),
-		db.getListNoOffset(id, 2),
+		ListManager.getInstance().getList(id, 0),
+		ListManager.getInstance().getList(id, 1),
+		ListManager.getInstance().getList(id, 2),
 	]);
 	const filtros = [...leidos, ...leyendo, ...planeandoleer];
-	let todos = await db.getAllBooks();
+	let todos = await BookManager.getInstance().getAllBooks();
 	todos = todos.filter((book) => !filtros.includes(book.Titulo));
 	const posibles = [];
 	const encoded = ((await encodedPromise) as tf.Tensor).reshape([194]);
@@ -147,7 +148,7 @@ async function inteligente(interaction: CommandInteraction) {
 		`Para mas información usa el comando /verlibro | Nota predecida: ${(
 			datos.nota * 10
 		).toFixed(2)}`,
-		await db.getNotaMedia(book.Titulo)
+		await ListManager.getInstance().getNotaMedia(book.Titulo)
 	);
 	await interaction.editReply({
 		embeds: [embed],

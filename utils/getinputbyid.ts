@@ -1,18 +1,17 @@
-import { DBManager } from "../managers";
 import tf from "@tensorflow/tfjs-node";
+import { ListManager, PineconeManager } from "../managers";
 
 async function getInputById(userid: string): Promise<tf.Tensor> {
-	const instancia = DBManager.getInstance();
 	const [leidos, leyendo, planeando] = await Promise.all([
-		instancia.getListNoOffset(userid, 0),
-		instancia.getListNoOffset(userid, 1),
-		instancia.getListNoOffset(userid, 2),
+		ListManager.getInstance().getList(userid, 0),
+		ListManager.getInstance().getList(userid, 1),
+		ListManager.getInstance().getList(userid, 2),
 	]);
 	const [embeddingsLeidos, embeddingsLeyendo, embeddingsPlaneando] =
 		await Promise.all([
-			instancia.getEmbeddings(leidos),
-			instancia.getEmbeddings(leyendo),
-			instancia.getEmbeddings(planeando),
+			PineconeManager.getInstance().getEmbeddings(leidos),
+			PineconeManager.getInstance().getEmbeddings(leyendo),
+			PineconeManager.getInstance().getEmbeddings(planeando),
 		]);
 	const averageEmbeddingsLeidos =
 		embeddingsLeidos.length == 0
@@ -38,8 +37,6 @@ async function getInputById(userid: string): Promise<tf.Tensor> {
 	return entrada;
 }
 async function getInputByTitle(title: string) {
-	const instancia = DBManager.getInstance();
-
-	return tf.tensor(await instancia.getEmbedding(title));
+	return tf.tensor(await PineconeManager.getInstance().getEmbedding(title));
 }
 export { getInputById, getInputByTitle };

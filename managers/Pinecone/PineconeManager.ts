@@ -1,6 +1,6 @@
 import { Index, Pinecone } from "@pinecone-database/pinecone";
-import { Book } from "../types";
-import { PineconeCache } from "../caches";
+import { Book } from "../../types";
+import { PineconeCache } from "../../caches";
 
 const removeAccents = (str) => {
 	return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -102,5 +102,28 @@ export class PineconeManager {
 	}
 	async updateBook(titleinput: string, Book: Book) {
 		await Promise.all([this.delete(titleinput), this.insertBook(Book)]);
+	}
+	async similarBooks(
+		book: Book,
+		excludedTitles: string[] = []
+	): Promise<string[]> {
+		const alltext = `Titulo: ${book.Titulo}\nSinopsis: ${book.Sinopsis}\nAutor: ${book.Autor}\nGeneros: ${book.Generos}\nPaginas: ${book.Paginas}`;
+		const similarTitles = await this.query(alltext, {
+			topK: 5,
+			includeMetadata: true,
+			filter: {
+				titulo: { $nin: excludedTitles.concat([book.Titulo]) },
+			},
+		});
+		return similarTitles.matches.map((e) => e.metadata.titulo);
+	}
+	async getBooksNameAutocomplete(title: string, limit: number = 25) {
+		const titles = (
+			await this.query(title, {
+				topK: limit,
+				includeMetadata: true,
+			})
+		).matches.map((e) => e.metadata.titulo as string);
+		return titles;
 	}
 }

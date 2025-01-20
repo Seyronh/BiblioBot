@@ -12,8 +12,7 @@ export class SqlCache {
 	private List: LRUCache<string, string[]>;
 	private ListNoOffset: LRUCache<string, string[]>;
 	private existslistBook: LRUCache<string, boolean>;
-	private paginasLeidas: LRUCache<string, number>;
-	private nota: LRUCache<string, number>;
+	private UserBookInfo: LRUCache<string, { Pagina: number; Nota: number }>;
 	private notaMedia: LRUCache<string, { media: number; count: number }>;
 	private static instance: SqlCache;
 
@@ -32,8 +31,7 @@ export class SqlCache {
 		this.existslist = new LRUCache(maxCacheSize);
 		this.ListCount = new LRUCache(maxCacheSize);
 		this.existslistBook = new LRUCache(maxCacheSize);
-		this.paginasLeidas = new LRUCache(maxCacheSize);
-		this.nota = new LRUCache(maxCacheSize);
+		this.UserBookInfo = new LRUCache(maxCacheSize);
 		this.notaMedia = new LRUCache(maxCacheSize);
 		this.ListNoOffset = new LRUCache(maxCacheSize);
 		this.AllBooks = undefined;
@@ -125,22 +123,6 @@ export class SqlCache {
 		this.ListNoOffset.deleteAll(new RegExp(`${userid}\\|`));
 	}
 
-	getPaginasLeidas(userID: string, title: string): number {
-		return this.paginasLeidas.get(`${userID}|${title}`);
-	}
-
-	savePaginasLeidas(userID: string, title: string, count: number): void {
-		this.paginasLeidas.put(`${userID}|${title}`, count);
-	}
-
-	getNota(userID: string, title: string): number {
-		return this.nota.get(`${userID}|${title}`);
-	}
-
-	saveNota(userID: string, title: string, count: number): void {
-		this.nota.put(`${userID}|${title}`, count);
-	}
-
 	getNotaMedia(title: string): { media: number; count: number } | undefined {
 		return this.notaMedia.get(title);
 	}
@@ -154,92 +136,27 @@ export class SqlCache {
 	}
 
 	deleteNota(userid: string, title: string): void {
-		this.nota.delete(`${userid}|${title}`);
+		this.UserBookInfo.delete(`${userid}|${title}`);
 		this.resetNotaMedia(title);
 	}
-
+	getUserBookInfo(
+		userid: string,
+		title: string
+	): { Pagina: number; Nota: number } {
+		return this.UserBookInfo.get(`${userid}|${title}`);
+	}
+	saveUserBookInfo(
+		userid: string,
+		title: string,
+		info: { Pagina: number; Nota: number }
+	): void {
+		this.UserBookInfo.put(`${userid}|${title}`, info);
+	}
+	resetUserBookInfo(userid: string, title: string): void {
+		this.UserBookInfo.delete(`${userid}|${title}`);
+	}
 	updateCachesInsert(book: Book): void {
 		if (this.AllBooks) this.AllBooks.push(book);
-	}
-	updateBookTitle(titleinput: string, newtitle: string): void {
-		const book = this.bookbytitle.get(titleinput);
-		if (book) {
-			book.Titulo = newtitle;
-			this.bookbytitle.put(newtitle, book);
-		}
-		this.updateCachesDelete(titleinput);
-	}
-
-	updateBookAuthor(titleinput: string, newauthor: string): void {
-		const book = this.bookbytitle.get(titleinput);
-		if (book) {
-			book.Autor = newauthor;
-			this.bookbytitle.put(titleinput, book);
-		}
-		if (this.AllBooks)
-			this.AllBooks = this.AllBooks.map((book) => {
-				if (book.Titulo === titleinput) {
-					book.Autor = newauthor;
-				}
-				return book;
-			});
-	}
-	updateBookSinopsis(titleinput: string, newsinopsis: string): void {
-		const book = this.bookbytitle.get(titleinput);
-		if (book) {
-			book.Sinopsis = newsinopsis;
-			this.bookbytitle.put(titleinput, book);
-		}
-
-		if (this.AllBooks)
-			this.AllBooks = this.AllBooks.map((book) => {
-				if (book.Titulo === titleinput) {
-					book.Sinopsis = newsinopsis;
-				}
-				return book;
-			});
-	}
-	updateBookPages(titleinput: string, newpages: number): void {
-		const book = this.bookbytitle.get(titleinput);
-		if (book) {
-			book.Paginas = newpages;
-			this.bookbytitle.put(titleinput, book);
-		}
-		if (this.AllBooks)
-			this.AllBooks = this.AllBooks.map((book) => {
-				if (book.Titulo === titleinput) {
-					book.Paginas = newpages;
-				}
-				return book;
-			});
-	}
-	updateBookImage(titleinput: string, newimage: ArrayBuffer): void {
-		const book = this.bookbytitle.get(titleinput);
-		if (book) {
-			book.Imagen = newimage;
-			this.bookbytitle.put(titleinput, book);
-		}
-		if (this.AllBooks)
-			this.AllBooks = this.AllBooks.map((book) => {
-				if (book.Titulo === titleinput) {
-					book.Imagen = newimage;
-				}
-				return book;
-			});
-	}
-	updateBookGenres(titleinput: string, newgenres: string[]): void {
-		const book = this.bookbytitle.get(titleinput);
-		if (book) {
-			book.Generos = newgenres;
-			this.bookbytitle.put(titleinput, book);
-		}
-		if (this.AllBooks)
-			this.AllBooks = this.AllBooks.map((book) => {
-				if (book.Titulo === titleinput) {
-					book.Generos = newgenres;
-				}
-				return book;
-			});
 	}
 
 	updateCachesDelete(title: string): void {
@@ -248,14 +165,12 @@ export class SqlCache {
 		this.exitsbook.delete(title);
 		this.notaMedia.delete(title);
 		this.existslistBook.deleteAll(new RegExp(`\\|${title}$`));
-		this.paginasLeidas.deleteAll(new RegExp(`\\|${title}$`));
-		this.nota.deleteAll(new RegExp(`\\|${title}$`));
+		this.UserBookInfo.deleteAll(new RegExp(`\\|${title}$`));
 		this.existslist = new LRUCache(maxCacheSize);
 		this.ListCount = new LRUCache(maxCacheSize);
 		this.List = new LRUCache(maxCacheSize);
 		this.ListNoOffset = new LRUCache(maxCacheSize);
-		if (this.AllBooks)
-			this.AllBooks = this.AllBooks.filter((book) => book.Titulo !== title);
+		this.AllBooks = undefined;
 	}
 	totalReset() {
 		SqlCache.instance = undefined;

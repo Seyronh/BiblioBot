@@ -25,9 +25,7 @@ import {
 	extraerGeneros,
 	insertTextInMiddle,
 } from "../utils";
-import { DBManager, BookEventManager } from "../managers";
-
-const db = DBManager.getInstance();
+import { BookEventManager, BookManager } from "../managers";
 
 const comando: Command = {
 	data: new SlashCommandBuilder()
@@ -58,7 +56,7 @@ const comando: Command = {
 			});
 			return;
 		}
-		if (await db.existsBook(title)) {
+		if (await BookManager.getInstance().getBookByTitle(title)) {
 			await interaction.editReply({
 				content: "Ya existe un libro con ese titulo",
 			});
@@ -139,12 +137,12 @@ async function handleContinuarButton(interaction: ButtonInteraction) {
 	const generos = extraerGeneros(message.content);
 	const modal = createModal();
 
-	// @ts-ignore
+	//
 	await interaction.showModal(modal);
 	const collectorFilter = (i) => {
 		return i.user.id === interaction.user.id;
 	};
-	// @ts-ignore
+	//
 	interaction
 		.awaitModalSubmit({ time: 600_000, filter: collectorFilter })
 		.then(async (interaction2) => {
@@ -234,7 +232,7 @@ async function handleModalSubmit(
 		Titulo: title,
 		Sinopsis: sinopsis.trim(),
 		Autor: autor.trim(),
-		Generos: generos.split(","),
+		Generos: generos,
 		Paginas: paginas,
 		Imagen: buffer,
 	};
@@ -290,16 +288,14 @@ async function handleModalSubmit(
 	}
 }
 
-// Function to handle the confirm button
 async function handleConfirmButton(interaction) {
-	// @ts-ignore
 	const Channel: TextChannel = await interaction.client.channels.fetch(
 		interaction.channelId
 	);
 	const Message = await Channel.messages.fetch(interaction.message.id);
 	if (Message.deletable) {
 		const title = Message.embeds[0].title;
-		const bookTest = await db.getBookByTitle(title);
+		const bookTest = await BookManager.getInstance().getBookByTitle(title);
 		if (bookTest) {
 			await interaction.reply({
 				content: "Ya existe un libro con ese titulo, eliminado de sugerencias.",
@@ -319,14 +315,20 @@ async function handleConfirmButton(interaction) {
 		const book: Book = {
 			Titulo: title,
 			Autor: author,
-			Generos: genres.split(",").map((e) => e.trim()),
+			Generos: genres
+				.split(",")
+				.map((e) => e.trim())
+				.join(","),
 			Paginas: paginas,
 			Sinopsis: synopsis,
 			Imagen: buffer,
 		};
 
 		// Insert the book in the database
-		await Promise.all([db.insertBook(book), Message.delete()]);
+		await Promise.all([
+			BookManager.getInstance().insertBook(book),
+			Message.delete(),
+		]);
 		BookEventManager.getInstance().eventBook(
 			book,
 			`Libro Aceptado por <@${interaction.user.id}>`
