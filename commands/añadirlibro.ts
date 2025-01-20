@@ -44,7 +44,7 @@ const comando: Command = {
 				.setRequired(true)
 		) as SlashCommandBuilder,
 	execute: async (interaction) => {
-		interaction.deferReply();
+		await interaction.deferReply();
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
 
