@@ -93,8 +93,6 @@ async function similares(interaction: CommandInteraction) {
 	});
 }
 
-const maximo = 10;
-const limite = maximo * 100;
 async function inteligente(interaction: CommandInteraction) {
 	const [autoencoder, recommender] = await Promise.all([
 		AutoEncoder.getInstance(),
@@ -116,8 +114,7 @@ async function inteligente(interaction: CommandInteraction) {
 	const posibles = [];
 	const encoded = ((await encodedPromise) as tf.Tensor).reshape([194]);
 	reshapedDatos.dispose();
-	for (let i = 0; i < limite && posibles.length < maximo; i++) {
-		const book = todos[Math.floor(Math.random() * todos.length)];
+	for (const book of todos) {
 		const libro = await getInputByTitle(book);
 		const entrada = tf.concat([libro, encoded]);
 		const reshapedEntrada = entrada.reshape([1, 1218]);
@@ -127,9 +124,7 @@ async function inteligente(interaction: CommandInteraction) {
 		reshapedEntrada.dispose();
 		entrada.dispose();
 		libro.dispose();
-		if (notaPredecida > 0.5) {
-			posibles.push({ libro: book, nota: notaPredecida });
-		}
+		posibles.push({ libro: book, nota: notaPredecida });
 	}
 	encoded.dispose();
 	if (posibles.length == 0) {
