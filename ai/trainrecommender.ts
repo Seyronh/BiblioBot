@@ -1,16 +1,14 @@
-import { DBManager } from "../managers";
+import { ListManager } from "../managers";
 import { getInputById, getInputByTitle } from "../utils";
 import { AutoEncoder } from "./autoencoder";
 
 import { Recommender } from "./recommender";
 import tf from "@tensorflow/tfjs-node";
 
-const instancia = DBManager.getInstance();
-
 (async () => {
 	const autoencoder = await AutoEncoder.getInstance();
 	const recommender = await Recommender.getInstance();
-	const trios = await instancia.getTitleNotaPairs();
+	const trios = await ListManager.getInstance().getTitleNotaPairs();
 	const datosIds = [];
 	for (let i = 0; i < trios.length; i++) {
 		if (datosIds.indexOf((e) => e.id == trios[i].id) == -1) {
