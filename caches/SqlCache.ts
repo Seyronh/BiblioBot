@@ -6,7 +6,7 @@ export class SqlCache {
 	private bookbytitle: LRUCache<string, Book>;
 	private booksnameautocomplete: LRUCache<string, string[]>;
 	private exitsbook: LRUCache<string, boolean>;
-	private AllBooks: Book[];
+	private AllBooks: string[];
 	private existslist: LRUCache<string, boolean>;
 	private ListCount: LRUCache<string, number>;
 	private List: LRUCache<string, string[]>;
@@ -45,11 +45,11 @@ export class SqlCache {
 		this.bookbytitle.put(titleinput, book);
 	}
 
-	getAllBooks(): Book[] {
+	getAllBooks(): string[] {
 		return this.AllBooks;
 	}
 
-	setAllBooks(books: Book[]): void {
+	setAllBooks(books: string[]): void {
 		this.AllBooks = books;
 	}
 
@@ -155,7 +155,7 @@ export class SqlCache {
 	resetUserBookInfo(userid: string, title: string): void {
 		this.UserBookInfo.delete(`${userid}|${title}`);
 	}
-	updateCachesInsert(book: Book): void {
+	updateCachesInsert(book: string): void {
 		if (this.AllBooks) this.AllBooks.push(book);
 	}
 
