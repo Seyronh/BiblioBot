@@ -9,6 +9,7 @@ import {
 	Channel,
 	CommandInteractionOptionResolver,
 	EmbedBuilder,
+	MessageActionRowComponent,
 	MessageFlags,
 	SlashCommandBuilder,
 	StringSelectMenuBuilder,
@@ -18,9 +19,9 @@ import {
 	TextChannel,
 } from "discord.js";
 import { Command } from "../types";
-import { DBManager } from "../managers";
 import { bookembed } from "../utils";
 import { maxLibrosPorPagina, maxPaginas } from "../config.json";
+import { BookManager, ListManager } from "../managers";
 
 const Estados = ["leidos", "en progreso", "planeandos para leer"];
 const IndexEstados = ["leidos", "enprogreso", "planeandoleer"];
@@ -38,10 +39,10 @@ async function responder(
 	if (footerSplited[2].trim().split(" ")[1] !== interaction.user.id) return;
 	const estado = IndexEstados.indexOf(type);
 
-	const books = await db.getList(
+	const books = await ListManager.getInstance().getList(
 		interaction.user.id,
-		pagina * maxLibrosPorPagina,
-		estado
+		estado,
+		pagina * maxLibrosPorPagina
 	);
 
 	if (books.length == 0 && !eliminado) {
@@ -58,7 +59,10 @@ async function responder(
 		});
 		return;
 	}
-	const totallibros = await db.getListCount(interaction.user.id, estado);
+	const totallibros = await ListManager.getInstance().getListCount(
+		interaction.user.id,
+		estado
+	);
 
 	const paginastotal = Math.ceil(totallibros / maxLibrosPorPagina);
 	const paginastotalEmbed = parseInt(
@@ -71,36 +75,33 @@ async function responder(
 		paginactual = paginastotal;
 	}
 	const row1 = interaction.message.components[0];
-	// @ts-ignore
+	//
 	row1.components[2] = ButtonBuilder.from(
 		row1.components[2] as unknown as ButtonComponent
-	).setDisabled(false);
-	// @ts-ignore
+	).setDisabled(false) as unknown as MessageActionRowComponent;
+	//
 	row1.components[0] = ButtonBuilder.from(
 		row1.components[0] as unknown as ButtonComponent
-	).setDisabled(false);
+	).setDisabled(false) as unknown as MessageActionRowComponent;
 
 	if (libro == 0 && pagina == 0) {
-		// @ts-ignore
 		row1.components[0] = ButtonBuilder.from(
 			row1.components[0] as unknown as ButtonComponent
-		).setDisabled(true);
+		).setDisabled(true) as unknown as MessageActionRowComponent;
 	}
 	if (libro + pagina * maxLibrosPorPagina == totallibros - 1) {
-		// @ts-ignore
 		row1.components[2] = ButtonBuilder.from(
 			row1.components[2] as unknown as ButtonComponent
-		).setDisabled(true);
+		).setDisabled(true) as unknown as MessageActionRowComponent;
 	}
-	const book = await db.getBookByTitle(books[libro]);
+	const book = await BookManager.getInstance().getBookByTitle(books[libro]);
 	const imageBuffer = Buffer.from(book.Imagen);
 	const attachment = new AttachmentBuilder(imageBuffer, {
 		name: `imagen.jpg`,
 	});
-	const [notaMedia, PaginasLeidas, NotaPersonal] = await Promise.all([
-		db.getNotaMedia(book.Titulo),
-		db.getPaginasLeidas(interaction.user.id, book.Titulo),
-		db.getNota(interaction.user.id, book.Titulo),
+	const [notaMedia, Info] = await Promise.all([
+		ListManager.getInstance().getNotaMedia(book.Titulo),
+		ListManager.getInstance().getUserBookInfo(interaction.user.id, book.Titulo),
 	]);
 	const embednuevo = bookembed(
 		book,
@@ -108,8 +109,8 @@ async function responder(
 			pagina + 1
 		}/${paginastotal} | userid: ${interaction.user.id}`,
 		notaMedia,
-		PaginasLeidas,
-		NotaPersonal
+		Info.Pagina,
+		Info.Nota
 	);
 	const row2 = interaction.message.components[1];
 	const selectmenu = StringSelectMenuBuilder.from(
@@ -123,8 +124,7 @@ async function responder(
 			option.setDefault(true);
 		}
 	});
-	// @ts-ignore
-	row2.components[0] = selectmenu;
+	row2.components[0] = selectmenu as unknown as MessageActionRowComponent;
 
 	await interaction.editReply({
 		content: eliminado ? `Libro eliminado de la lista` : undefined,
@@ -134,7 +134,6 @@ async function responder(
 	});
 }
 
-const db = DBManager.getInstance();
 const comando: Command = {
 	data: new SlashCommandBuilder()
 		.setName("listas")
@@ -148,7 +147,6 @@ const comando: Command = {
 		) as SlashCommandBuilder,
 	execute: async (interaction) => {
 		await interaction.deferReply();
-		const db = DBManager.getInstance();
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
 		const categorialista = interactionOptions
@@ -164,14 +162,18 @@ const comando: Command = {
 			});
 			return;
 		}
-		if (!(await db.existsList(interaction.user.id))) {
+		if (!(await ListManager.getInstance().existsList(interaction.user.id))) {
 			await interaction.followUp({
 				content: `No tienes libros ${Estados[estado]}`,
 				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
-		const books = await db.getList(interaction.user.id, 0, estado);
+		const books = await ListManager.getInstance().getList(
+			interaction.user.id,
+			estado,
+			0
+		);
 
 		if (books.length == 0) {
 			await interaction.followUp({
@@ -181,24 +183,29 @@ const comando: Command = {
 			return;
 		}
 
-		const book = await db.getBookByTitle(books[0]);
+		const book = await BookManager.getInstance().getBookByTitle(books[0]);
 		const imageBuffer = Buffer.from(book.Imagen);
 		const attachment = new AttachmentBuilder(imageBuffer, {
 			name: `imagen.jpg`,
 		});
-		const totallibros = await db.getListCount(interaction.user.id, estado);
+		const totallibros = await ListManager.getInstance().getListCount(
+			interaction.user.id,
+			estado
+		);
 		const paginastotal = Math.ceil(totallibros / maxLibrosPorPagina);
-		const [notaMedia, PaginasLeidas, NotaPersonal] = await Promise.all([
-			db.getNotaMedia(book.Titulo),
-			db.getPaginasLeidas(interaction.user.id, book.Titulo),
-			db.getNota(interaction.user.id, book.Titulo),
+		const [notaMedia, Info] = await Promise.all([
+			ListManager.getInstance().getNotaMedia(book.Titulo),
+			ListManager.getInstance().getUserBookInfo(
+				interaction.user.id,
+				book.Titulo
+			),
 		]);
 		const embed = bookembed(
 			book,
 			`Libro: 1/${books.length} | Pagina: 1/${paginastotal} | userid: ${interaction.user.id}`,
 			notaMedia,
-			PaginasLeidas,
-			NotaPersonal
+			Info.Pagina,
+			Info.Nota
 		);
 		const atras = new ButtonBuilder()
 			.setCustomId(`${comando.data.name}|${categorialista}|atras`)
@@ -260,7 +267,6 @@ const comando: Command = {
 			name: candidato,
 			value: candidato.toLowerCase().split(" ").join(""),
 		}));
-		// @ts-ignore
 		await interaction.respond(mapeado);
 	},
 	buttons: async (interaction: ButtonInteraction) => {
@@ -277,14 +283,17 @@ const comando: Command = {
 				const footerSplited = Message.embeds[0].footer.text.split(" | ");
 				if (footerSplited[2].trim().split(" ")[1] !== interaction.user.id)
 					return;
-				const db = DBManager.getInstance();
-				await db.unmarkBook(interaction.user.id, title);
+				await ListManager.getInstance().unmarkBook(interaction.user.id, title);
 				await responder(interaction, 0, 0, partes[1], true);
 			} else {
 				const estado = Estados.indexOf(partes[0]);
 				if (estado == -1) return;
 
-				const books = await db.getList(interaction.user.id, 0, estado);
+				const books = await ListManager.getInstance().getList(
+					interaction.user.id,
+					estado,
+					0
+				);
 				if (books.length == 0) {
 					await interaction.reply({
 						content: "No tienes libros " + partes[0],
@@ -296,7 +305,10 @@ const comando: Command = {
 				const footer = tempEmbed.data.footer.text;
 				const footerSplited = footer.split(" | ");
 
-				const totallibros = await db.getListCount(interaction.user.id, estado);
+				const totallibros = await ListManager.getInstance().getListCount(
+					interaction.user.id,
+					estado
+				);
 
 				const paginastotal = Math.ceil(totallibros / maxLibrosPorPagina);
 				const paginastotalEmbed = parseInt(

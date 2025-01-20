@@ -10,10 +10,9 @@ import {
 	MessageFlags,
 } from "discord.js";
 import { Command } from "../types";
-import { DBManager } from "../managers";
 import { bookembed } from "../utils";
+import { BookManager, ListManager } from "../managers";
 
-const db = DBManager.getInstance();
 const comando: Command = {
 	data: new ContextMenuCommandBuilder()
 		.setName("analizar")
@@ -25,7 +24,7 @@ const comando: Command = {
 			await interaction.editReply("No hay contenido en el mensaje");
 			return;
 		}
-		const candidatos = await db.getBooksNameAutocomplete(
+		const candidatos = await BookManager.getInstance().getBooksNameAutocomplete(
 			message.content,
 			false,
 			2
@@ -47,11 +46,11 @@ const comando: Command = {
 			await interaction.deferUpdate();
 			if (partes[1] == interaction.message.embeds[0].title) return;
 			const Titulo = partes[1];
-			const book = await db.getBookByTitle(Titulo);
+			const book = await BookManager.getInstance().getBookByTitle(Titulo);
 			const embed = bookembed(
 				book,
 				"para mas información usa el comando /verlibro",
-				await db.getNotaMedia(book.Titulo)
+				await ListManager.getInstance().getNotaMedia(book.Titulo)
 			);
 			const imageBuffer = Buffer.from(book.Imagen);
 			const attachment = new AttachmentBuilder(imageBuffer, {

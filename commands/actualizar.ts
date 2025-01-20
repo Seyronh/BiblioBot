@@ -12,15 +12,15 @@ import {
 	StringSelectMenuInteraction,
 } from "discord.js";
 import { Command, Roles } from "../types";
-import { DBManager } from "../managers";
+
 import {
 	createMenuGenerosOptions,
 	extraerGeneros,
 	hasRole,
 	insertTextInMiddle,
 } from "../utils";
+import { BookManager } from "../managers";
 
-const db = DBManager.getInstance();
 const comando: Command = {
 	guildOnly: true,
 	data: new SlashCommandBuilder()
@@ -140,7 +140,7 @@ const comando: Command = {
 			interaction.options as CommandInteractionOptionResolver;
 		const subcommand = interactionOptions.getSubcommand();
 		const titulo = interactionOptions.getString("titulo");
-		const book = await db.getBookByTitle(titulo);
+		const book = await BookManager.getInstance().getBookByTitle(titulo);
 		if (!book) {
 			await interaction.editReply({
 				content: "Libro no encontrado",
@@ -175,7 +175,7 @@ const comando: Command = {
 	autoComplete: async (interaction: AutocompleteInteraction) => {
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
-		const candidatos = await db.getBooksNameAutocomplete(
+		const candidatos = await BookManager.getInstance().getBooksNameAutocomplete(
 			interactionOptions.getFocused(),
 			true
 		);
@@ -223,14 +223,18 @@ async function cambiarTitulo(interaction: CommandInteraction, titulo: string) {
 		});
 		return;
 	}
-	const book = await db.getBookByTitle(nuevotitulo);
+	const book = await BookManager.getInstance().getBookByTitle(nuevotitulo);
 	if (book) {
 		await interaction.editReply({
 			content: `Ya existe un libro con el nuevo titulo.`,
 		});
 		return;
 	}
-	await db.updateBookTitle(titulo, nuevotitulo);
+	await BookManager.getInstance().updateBookField(
+		titulo,
+		"Titulo",
+		nuevotitulo
+	);
 	await interaction.editReply({
 		content: `Titulo actualizado con exito`,
 	});
@@ -245,7 +249,7 @@ async function cambiarAutor(interaction: CommandInteraction, titulo: string) {
 		});
 		return;
 	}
-	await db.updateBookAuthor(titulo, nuevoautor);
+	await BookManager.getInstance().updateBookField(titulo, "Autor", nuevoautor);
 	await interaction.editReply({
 		content: `Autor actualizado con exito`,
 	});
@@ -263,7 +267,11 @@ async function cambiarSinopsis(
 		});
 		return;
 	}
-	await db.updateBookSinopsis(titulo, nuevasinopsis);
+	await BookManager.getInstance().updateBookField(
+		titulo,
+		"Sinopsis",
+		nuevasinopsis
+	);
 	await interaction.editReply({
 		content: `Sinopsis actualizada con exito`,
 	});
@@ -284,7 +292,11 @@ async function cambiarPaginas(interaction: CommandInteraction, titulo: string) {
 		});
 		return;
 	}
-	await db.updateBookPages(titulo, nuevaspaginas);
+	await BookManager.getInstance().updateBookField(
+		titulo,
+		"Paginas",
+		nuevaspaginas
+	);
 	await interaction.editReply({
 		content: `Paginas actualizadas con exito`,
 	});
@@ -311,7 +323,7 @@ async function cambiarImagen(interaction: CommandInteraction, titulo: string) {
 
 	const response = await fetch(nuevaimagen.url);
 	const buffer = await response.arrayBuffer();
-	await db.updateBookImage(titulo, buffer);
+	await BookManager.getInstance().updateBookField(titulo, "Imagen", buffer);
 	await interaction.editReply({
 		content: `Imagen actualizada con exito`,
 	});
@@ -343,9 +355,10 @@ async function handleContinuarButton(interaction: ButtonInteraction) {
 	await interaction.deferUpdate();
 	if (interaction.user.id !== interaction.customId.split("|")[1]) return;
 	const generos = extraerGeneros(interaction.message.content);
-	await db.updateBookGenres(
+	await BookManager.getInstance().updateBookField(
 		interaction.message.content.split("|")[1],
-		generos.split(",")
+		"Generos",
+		generos
 	);
 	await interaction.editReply({
 		content: `Generos actualizados con exito`,

@@ -1,6 +1,6 @@
 import { ButtonInteraction, TextChannel, MessageFlags } from "discord.js";
-import { DBManager } from "../managers";
-const db = DBManager.getInstance();
+import { ListManager } from "../managers";
+
 const IndexEstados = ["leido", "enprogreso", "planeandoleer"];
 
 export async function handleBookInteraction(
@@ -23,5 +23,5 @@ export async function handleBookInteraction(
 	await interaction.editReply({
 		content: sucessMessage,
 	});
-	await db.markBook(interaction.user.id, title, state);
+	await ListManager.getInstance().markBook(interaction.user.id, title, state);
 }

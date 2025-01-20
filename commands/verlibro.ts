@@ -11,11 +11,9 @@ import {
 	SlashCommandBuilder,
 } from "discord.js";
 import { Command } from "../types";
-import { DBManager } from "../managers";
 import { bookembed } from "../utils";
 import { handleBookInteraction } from "../handlers";
-
-const db = DBManager.getInstance();
+import { BookManager, ListManager } from "../managers";
 
 const comando: Command = {
 	data: new SlashCommandBuilder()
@@ -33,7 +31,7 @@ const comando: Command = {
 		const interactionOptions =
 			interaction.options as CommandInteractionOptionResolver;
 		const id = interactionOptions.getString("busqueda");
-		const book = await db.getBookByTitle(id);
+		const book = await BookManager.getInstance().getBookByTitle(id);
 		if (!book) {
 			await interaction.followUp({
 				content: "Libro no encontrado",
@@ -41,17 +39,17 @@ const comando: Command = {
 			});
 			return;
 		}
-		const [notaMedia, paginasLeidas, notaPersonal] = await Promise.all([
-			db.getNotaMedia(book.Titulo),
-			db.getPaginasLeidas(interaction.user.id, book.Titulo),
-			db.getNota(interaction.user.id, book.Titulo),
+		const listmanager = ListManager.getInstance();
+		const [notaMedia, info] = await Promise.all([
+			listmanager.getNotaMedia(book.Titulo),
+			listmanager.getUserBookInfo(interaction.user.id, book.Titulo),
 		]);
 		const embed = bookembed(
 			book,
 			"Puedes ayudar añadiendo libros con el comando /añadirlibro",
 			notaMedia,
-			paginasLeidas,
-			notaPersonal
+			info.Pagina,
+			info.Nota
 		);
 		const imageBuffer = Buffer.from(book.Imagen);
 		const attachment = new AttachmentBuilder(imageBuffer, {
@@ -90,7 +88,7 @@ const comando: Command = {
 			interaction.options as CommandInteractionOptionResolver;
 		const busqueda = interactionOptions.getFocused();
 		const avanzada = busqueda.startsWith("d:");
-		const candidatos = await db.getBooksNameAutocomplete(
+		const candidatos = await BookManager.getInstance().getBooksNameAutocomplete(
 			avanzada ? busqueda.substring(2) : busqueda,
 			!avanzada
 		);
@@ -154,15 +152,15 @@ async function responder(
 	const footer = tempEmbed.data.footer.text;
 	const footerSplited = footer.split(" | ");
 	if (footerSplited[1].trim().split(" ")[1] !== interaction.user.id) return;
-	const book = await db.getBookByTitle(titulo);
-	const similares = await db.getSimilarBooks(book);
+	const book = await BookManager.getInstance().getBookByTitle(titulo);
+	const similares = await BookManager.getInstance().getSimilarBooks(book);
 
 	const embed = bookembed(
 		similares[libroactual],
 		`Libro: ${libroactual + 1}/${similares.length} | userid: ${
 			interaction.user.id
 		} | ${titulo}`,
-		await db.getNotaMedia(similares[libroactual].Titulo)
+		await ListManager.getInstance().getNotaMedia(similares[libroactual].Titulo)
 	);
 	const imageBuffer = Buffer.from(similares[libroactual].Imagen);
 	const attachment = new AttachmentBuilder(imageBuffer, {
@@ -197,14 +195,14 @@ async function handleSimilares(interaction: ButtonInteraction) {
 		});
 		return;
 	}
-	const book = await db.getBookByTitle(title);
+	const book = await BookManager.getInstance().getBookByTitle(title);
 	if (!book) {
 		await interaction.editReply({
 			content: "Libro no encontrado",
 		});
 		return;
 	}
-	const similares = await db.getSimilarBooks(book);
+	const similares = await BookManager.getInstance().getSimilarBooks(book);
 	if (!similares) {
 		await interaction.editReply({
 			content: "No se encontraron libros similares",
@@ -214,7 +212,7 @@ async function handleSimilares(interaction: ButtonInteraction) {
 	const embed = bookembed(
 		similares[0],
 		`Libro: 1/${similares.length} | userid: ${interaction.user.id} | ${title}`,
-		await db.getNotaMedia(similares[0].Titulo)
+		await ListManager.getInstance().getNotaMedia(similares[0].Titulo)
 	);
 	const imageBuffer = Buffer.from(similares[0].Imagen);
 	const attachment = new AttachmentBuilder(imageBuffer, {

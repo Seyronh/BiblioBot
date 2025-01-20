@@ -10,7 +10,7 @@ function createEmbedFields(
 	const fields = [
 		{
 			name: "Generos",
-			value: book.Generos.join(", "),
+			value: book.Generos,
 			inline: true,
 		},
 		{

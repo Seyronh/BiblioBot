@@ -67,7 +67,7 @@ export class LRUCache<K, V> {
 
 	// Delete all key-value pairs that match the given regular expression
 	deleteAll(key: RegExp) {
-		// @ts-ignore
+		//@ts-ignore
 		for (const prop of this.cache.keys()) {
 			if (key.test(prop.toString())) {
 				this.cache.delete(prop);
@@ -75,7 +75,7 @@ export class LRUCache<K, V> {
 		}
 	}
 	updateTTL() {
-		// @ts-ignore
+		//@ts-ignore
 		for (const key of this.cache.keys()) {
 			const valor = this.cache.get(key);
 			valor.TTL--;

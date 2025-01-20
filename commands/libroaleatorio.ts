@@ -8,11 +8,9 @@ import {
 	SlashCommandBuilder,
 } from "discord.js";
 import { Command } from "../types";
-import { DBManager } from "../managers";
 import { bookembed } from "../utils";
 import { handleBookInteraction } from "../handlers";
-
-const db = DBManager.getInstance();
+import { BookManager, ListManager } from "../managers";
 
 const comando: Command = {
 	data: new SlashCommandBuilder()
@@ -20,7 +18,7 @@ const comando: Command = {
 		.setDescription("Muestra un libro aleatorio") as SlashCommandBuilder,
 	execute: async (interaction) => {
 		await interaction.deferReply();
-		const book = await db.getRandomBooks(1);
+		const book = await BookManager.getInstance().randomBooks(1);
 		if (!book[0]) {
 			await interaction.followUp({
 				content: "No hay libros disponibles",
@@ -31,7 +29,7 @@ const comando: Command = {
 		const embed = bookembed(
 			book[0],
 			"Libro aleatorio",
-			await db.getNotaMedia(book[0].Titulo)
+			await ListManager.getInstance().getNotaMedia(book[0].Titulo)
 		);
 		const imageBuffer = Buffer.from(book[0].Imagen);
 		const attachment = new AttachmentBuilder(imageBuffer, {
