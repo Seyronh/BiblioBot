@@ -19,7 +19,7 @@ export class BookManager {
 		if (cache) return cache;
 		const books = await SQLConnection.getInstance().executeQuery<{
 			Titulo: string;
-		}>("SELECT Titulo FROM books");
+		}>("SELECT Titulo FROM Libros");
 		const titulos = books.map((e) => e.Titulo);
 		SqlCache.getInstance().setAllBooks(titulos);
 		return titulos;
