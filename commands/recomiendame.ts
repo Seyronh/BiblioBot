@@ -138,7 +138,7 @@ async function inteligente(interaction: CommandInteraction) {
 	}
 	const posiblesOrdenados = posibles.sort((a, b) => b.nota - a.nota);
 	const datos = posiblesOrdenados[0];
-	const book = datos.libro;
+	const book = await BookManager.getInstance().getBookByTitle(datos.libro);
 	const imageBuffer = Buffer.from(book.Imagen);
 	const attachment = new AttachmentBuilder(imageBuffer, {
 		name: `imagen.jpg`,
