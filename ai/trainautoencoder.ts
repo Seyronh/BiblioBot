@@ -1,13 +1,11 @@
-import { DBManager } from "../managers";
+import { ListManager } from "../managers";
 import { getInputById } from "../utils";
 
 import { AutoEncoder } from "./autoencoder";
 import tf from "@tensorflow/tfjs-node";
 
-const instancia = DBManager.getInstance();
-
 (async () => {
-	const ids = await instancia.getAllIds();
+	const ids = await ListManager.getInstance().getAllIds();
 	const autoencoder = await AutoEncoder.getInstance();
 	const promesas = [];
 	for (let i = 0; i < ids.length; i++) {
