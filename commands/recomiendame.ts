@@ -112,13 +112,13 @@ async function inteligente(interaction: CommandInteraction) {
 	]);
 	const filtros = [...leidos, ...leyendo, ...planeandoleer];
 	let todos = await BookManager.getInstance().getAllBooks();
-	todos = todos.filter((book) => !filtros.includes(book.Titulo));
+	todos = todos.filter((book) => !filtros.includes(book));
 	const posibles = [];
 	const encoded = ((await encodedPromise) as tf.Tensor).reshape([194]);
 	reshapedDatos.dispose();
 	for (let i = 0; i < limite && posibles.length < maximo; i++) {
 		const book = todos[Math.floor(Math.random() * todos.length)];
-		const libro = await getInputByTitle(book.Titulo);
+		const libro = await getInputByTitle(book);
 		const entrada = tf.concat([libro, encoded]);
 		const reshapedEntrada = entrada.reshape([1, 1218]);
 		const salida = (await recommender.predict(reshapedEntrada)) as tf.Tensor;

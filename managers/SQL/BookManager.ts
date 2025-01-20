@@ -14,17 +14,15 @@ export class BookManager {
 		}
 		return BookManager.instance;
 	}
-	public async getAllBooks(): Promise<Book[]> {
+	public async getAllBooks(): Promise<string[]> {
 		const cache = SqlCache.getInstance().getAllBooks();
 		if (cache) return cache;
-		const books = await SQLConnection.getInstance().executeQuery<Book>(
-			"SELECT * FROM books"
-		);
-		books.forEach((b) => {
-			b.Imagen = hexToArrayBuffer(b.Imagen);
-		});
-		SqlCache.getInstance().setAllBooks(books);
-		return books;
+		const books = await SQLConnection.getInstance().executeQuery<{
+			Titulo: string;
+		}>("SELECT Titulo FROM books");
+		const titulos = books.map((e) => e.Titulo);
+		SqlCache.getInstance().setAllBooks(titulos);
+		return titulos;
 	}
 	public async insertBook(book: Book): Promise<void> {
 		await Promise.all([
@@ -41,7 +39,7 @@ export class BookManager {
 			),
 			PineconeManager.getInstance().insertBook(book),
 		]);
-		SqlCache.getInstance().updateCachesInsert(book);
+		SqlCache.getInstance().updateCachesInsert(book.Titulo);
 		return;
 	}
 	public async getBookByTitle(titleinput: string): Promise<Book | undefined> {
