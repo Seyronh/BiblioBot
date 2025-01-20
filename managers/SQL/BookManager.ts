@@ -89,15 +89,12 @@ export class BookManager {
 			book,
 			excludedTitles
 		);
-		const promesas = [];
+		const promesas: Promise<Book>[] = [];
 		for (let i = 0; i < titles.length; i++) {
 			promesas.push(this.getBookByTitle(titles[i]));
 		}
 		const similarbooks = await Promise.all(promesas);
-		return similarbooks.map((b) => {
-			b.Imagen = hexToArrayBuffer(b.Imagen);
-			return b;
-		});
+		return similarbooks;
 	}
 	public async removeBook(title: string): Promise<void> {
 		await Promise.all([

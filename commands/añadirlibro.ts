@@ -135,13 +135,10 @@ async function handleContinuarButton(interaction: ButtonInteraction) {
 	const image = titleImage[2];
 	const generos = extraerGeneros(message.content);
 	const modal = createModal();
-
-	//
 	await interaction.showModal(modal);
 	const collectorFilter = (i) => {
 		return i.user.id === interaction.user.id;
 	};
-	//
 	interaction
 		.awaitModalSubmit({ time: 600_000, filter: collectorFilter })
 		.then(async (interaction2) => {
