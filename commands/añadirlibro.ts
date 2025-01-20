@@ -98,7 +98,6 @@ const comando: Command = {
 			await handleContinuarButton(interaction);
 		}
 		if (hasRole(interaction, Roles.Colaborador)) {
-			await interaction.deferReply();
 			if (interaction.customId === "Confirm") {
 				await handleConfirmButton(interaction);
 			} else if (interaction.customId === "Cancel") {
