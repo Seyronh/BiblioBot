@@ -1,9 +1,9 @@
 import tf from "@tensorflow/tfjs-node";
 import { ListManager, PineconeManager } from "../managers";
-import { getInputByID as inputCache } from "../caches";
+import { getInputByIDCache } from "../caches";
 
 async function getInputById(userid: string): Promise<tf.Tensor> {
-	const resultCache = inputCache.getInstance().getTensor(userid);
+	const resultCache = getInputByIDCache.getInstance().getTensor(userid);
 	if (resultCache) return resultCache;
 	const [leidos, leyendo, planeando] = await Promise.all([
 		ListManager.getInstance().getList(userid, 0),
@@ -36,7 +36,7 @@ async function getInputById(userid: string): Promise<tf.Tensor> {
 	averageEmbeddingsLeidos.dispose();
 	averageEmbeddingsLeyendo.dispose();
 	averageEmbeddingsPlaneando.dispose();
-	inputCache.getInstance().setTensor(userid, entrada);
+	getInputByIDCache.getInstance().setTensor(userid, entrada);
 	return entrada;
 }
 async function getInputByTitle(title: string): Promise<tf.Tensor> {

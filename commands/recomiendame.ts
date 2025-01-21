@@ -142,7 +142,7 @@ async function inteligente(interaction: CommandInteraction) {
 	} else {
 		posiblesOrdenados = resultCache;
 	}
-	const aleatorio = Math.random() <= 0.8;
+	const aleatorio = Math.random() <= 0.9;
 	let datos: { libro: string; nota: number };
 	if (aleatorio) {
 		datos =

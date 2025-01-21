@@ -1,5 +1,9 @@
 import { SQLConnection } from "./SQLConnection";
-import { SqlCache } from "../../caches";
+import {
+	getInputByIDCache,
+	recomiendameInteligenteCache,
+	SqlCache,
+} from "../../caches";
 import { Book } from "../../types";
 import { arrayBufferToHex, hexToArrayBuffer } from "../../utils";
 import { PineconeManager } from "../Pinecone/PineconeManager";
@@ -39,6 +43,7 @@ export class BookManager {
 			),
 			PineconeManager.getInstance().insertBook(book),
 		]);
+		recomiendameInteligenteCache.getInstance().resetAll();
 		SqlCache.getInstance().updateCachesInsert(book.Titulo);
 		return;
 	}
@@ -76,6 +81,8 @@ export class BookManager {
 			promesas.push(ListManager.getInstance().updateBook(title, value));
 		}
 		await Promise.all(promesas);
+		recomiendameInteligenteCache.getInstance().resetAll();
+		getInputByIDCache.getInstance().resetAll();
 		SqlCache.getInstance().updateCachesDelete(title);
 		return;
 	}

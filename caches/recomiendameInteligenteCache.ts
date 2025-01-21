@@ -28,4 +28,7 @@ export class recomiendameInteligenteCache {
 	public resetNota(input: string) {
 		this.cache.delete(input);
 	}
+	public resetAll() {
+		this.cache = new LRUCache(maxCacheSize);
+	}
 }

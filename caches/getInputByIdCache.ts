@@ -2,15 +2,15 @@ import { LRUCache } from "./base_caches/LRUCache";
 import { maxCacheSize } from "../config.json";
 import tf from "@tensorflow/tfjs-node";
 
-export class getInputByID {
-	private static instance: getInputByID;
+export class getInputByIDCache {
+	private static instance: getInputByIDCache;
 	private cache: LRUCache<string, any> = new LRUCache(maxCacheSize);
 
-	public static getInstance(): getInputByID {
-		if (!getInputByID.instance) {
-			getInputByID.instance = new getInputByID();
+	public static getInstance(): getInputByIDCache {
+		if (!getInputByIDCache.instance) {
+			getInputByIDCache.instance = new getInputByIDCache();
 		}
-		return getInputByID.instance;
+		return getInputByIDCache.instance;
 	}
 	private constructor() {}
 
@@ -25,5 +25,11 @@ export class getInputByID {
 	}
 	public resetTensor(input: string) {
 		this.cache.delete(input);
+	}
+	public reset(input: string) {
+		this.cache.delete(input);
+	}
+	public resetAll() {
+		this.cache = new LRUCache(maxCacheSize);
 	}
 }
