@@ -32,22 +32,7 @@ describe("SqlCache", () => {
 
 	it("should store and retrieve all books", () => {
 		const cache = SqlCache.getInstance();
-		const books: Book[] = [
-			{
-				Titulo: "TestTitle1",
-				Sinopsis: "TestSinopsis1",
-				Autor: "TestAutor1",
-				Generos: "TestGenero1",
-				Paginas: 100,
-			},
-			{
-				Titulo: "TestTitle2",
-				Sinopsis: "TestSinopsis2",
-				Autor: "TestAutor2",
-				Generos: "TestGenero2",
-				Paginas: 200,
-			},
-		];
+		const books: string[] = ["TestTitle1", "TestTitle2"];
 		cache.setAllBooks(books);
 		expect(cache.getAllBooks()).toEqual(books);
 	});
@@ -150,15 +135,8 @@ describe("SqlCache", () => {
 
 	it("should update caches on insert", () => {
 		const cache = SqlCache.getInstance();
-		const book: Book = {
-			Titulo: "TestTitle",
-			Sinopsis: "TestSinopsis",
-			Autor: "TestAutor",
-			Generos: "TestGenero",
-			Paginas: 100,
-		};
-		cache.updateCachesInsert(book);
-		if (cache.getAllBooks()) expect(cache.getAllBooks()).toBe([book]);
+		cache.updateCachesInsert("TestTitle");
+		if (cache.getAllBooks()) expect(cache.getAllBooks()).toBe(["TestTitle"]);
 	});
 
 	it("should update caches on delete", () => {
