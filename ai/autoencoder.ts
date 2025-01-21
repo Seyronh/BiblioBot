@@ -1,6 +1,5 @@
-import tf from "@tensorflow/tfjs-node";
+import tf, { Rank } from "@tensorflow/tfjs-node";
 import { AutoencoderCache } from "../caches";
-const cache = AutoencoderCache.getInstance();
 class AutoEncoder {
 	private capas: Array<number>;
 	private encoder: tf.Sequential;
@@ -21,22 +20,22 @@ class AutoEncoder {
 		this.autoencoder = this.createAutoEncoder();
 		this.compile();
 	}
-	compile() {
+	compile(): void {
 		this.autoencoder.compile({
 			optimizer: "adam",
 			loss: "meanSquaredError",
 		});
 	}
-	setEncoder(encoder: tf.Sequential) {
+	setEncoder(encoder: tf.Sequential): void {
 		this.encoder = encoder;
 	}
-	setDecoder(decoder: tf.Sequential) {
+	setDecoder(decoder: tf.Sequential): void {
 		this.decoder = decoder;
 	}
-	setAutoEncoder(autoencoder: tf.Sequential) {
+	setAutoEncoder(autoencoder: tf.Sequential): void {
 		this.autoencoder = autoencoder;
 	}
-	private createEncoder() {
+	private createEncoder(): tf.Sequential {
 		const encoder = tf.sequential();
 		for (let i = 1; i < this.capas.length; i++) {
 			encoder.add(
@@ -48,7 +47,7 @@ class AutoEncoder {
 		}
 		return encoder;
 	}
-	private createDecoder() {
+	private createDecoder(): tf.Sequential {
 		const decoder = tf.sequential();
 		const start = this.capas.length - 2;
 		for (let i = start; i >= 0; i--) {
@@ -61,21 +60,23 @@ class AutoEncoder {
 		}
 		return decoder;
 	}
-	private createAutoEncoder() {
+	private createAutoEncoder(): tf.Sequential {
 		const autoEncoder = tf.sequential();
 		autoEncoder.add(this.encoder);
 		autoEncoder.add(this.decoder);
 		return autoEncoder;
 	}
-	async train(data: tf.Tensor) {
+	async train(data: tf.Tensor): Promise<void> {
 		await this.autoencoder.fit(data, data, {
 			epochs: 100,
 		});
 	}
-	async encode(data: tf.Tensor) {
-		const result = cache.getEncoded(data);
+	async encode(data: tf.Tensor): Promise<tf.Tensor<Rank> | tf.Tensor<Rank>[]> {
+		const result = AutoencoderCache.getInstance().getEncoded(data);
 		if (result) return result;
-		return this.encoder.predict(data);
+		const prediction = this.encoder.predict(data);
+		AutoencoderCache.getInstance().saveEncoded(data, prediction as tf.Tensor);
+		return prediction;
 	}
 	async decode(data: tf.Tensor) {
 		return this.decoder.predict(data);

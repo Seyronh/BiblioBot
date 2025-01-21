@@ -1,4 +1,11 @@
-import { Index, Pinecone } from "@pinecone-database/pinecone";
+import {
+	FetchResponse,
+	Index,
+	Pinecone,
+	QueryByVectorValues,
+	QueryResponse,
+	RecordMetadata,
+} from "@pinecone-database/pinecone";
 import { Book } from "../../types";
 import { PineconeCache } from "../../caches";
 
@@ -24,7 +31,7 @@ export class PineconeManager {
 		this.pinecone = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
 		this.index = this.pinecone.index(process.env.PINECONE_INDEX);
 	}
-	async embedPassage(text: string) {
+	async embedPassage(text: string): Promise<number[]> {
 		const cacheResult = cache.embedPassage(text);
 		if (cacheResult) return cacheResult;
 		const results = (
@@ -36,7 +43,7 @@ export class PineconeManager {
 		cache.saveEmbedPassage(text, results);
 		return results;
 	}
-	async embedQuery(text: string) {
+	async embedQuery(text: string): Promise<number[]> {
 		const cacheResult = cache.embedQuery(text);
 		if (cacheResult) return cacheResult;
 		const results = (
@@ -48,7 +55,7 @@ export class PineconeManager {
 		cache.saveEmbedQuery(text, results);
 		return results;
 	}
-	async insertBook(book: Book) {
+	async insertBook(book: Book): Promise<void> {
 		const alltext = `Titulo: ${book.Titulo}\nSinopsis: ${book.Sinopsis}\nAutor: ${book.Autor}\nGeneros: ${book.Generos}\nPaginas: ${book.Paginas}`;
 		await this.index.namespace(process.env.PINECONE_NAMESPACE).upsert([
 			{
@@ -58,7 +65,10 @@ export class PineconeManager {
 			},
 		]);
 	}
-	async query(titulo: string, search: any) {
+	async query(
+		titulo: string,
+		search: QueryByVectorValues
+	): Promise<QueryResponse<RecordMetadata>> {
 		const cacheResult = cache.query(titulo, search);
 		if (cacheResult) return cacheResult;
 		search.vector = await this.embedQuery(titulo);
@@ -68,7 +78,7 @@ export class PineconeManager {
 		cache.saveQuery(titulo, search, results);
 		return results;
 	}
-	async fetch(title: string) {
+	async fetch(title: string): Promise<FetchResponse<RecordMetadata>> {
 		const cacheResult = cache.fetch(title);
 		if (cacheResult) return cacheResult;
 		const results = await this.index
@@ -77,31 +87,36 @@ export class PineconeManager {
 		cache.saveFetch(title, results);
 		return results;
 	}
-	async fetchMultiple(titles: string[]) {
-		const promises = [];
+	async fetchMultiple(
+		titles: string[]
+	): Promise<FetchResponse<RecordMetadata>[]> {
+		const promises: Promise<FetchResponse<RecordMetadata>>[] = [];
 		for (let i = 0; i < titles.length; i++) {
 			promises.push(this.fetch(titles[i]));
 		}
 		const results = await Promise.all(promises);
 		return results;
 	}
-	async getEmbedding(title: string) {
+	async getEmbedding(title: string): Promise<number[]> {
 		const data = await this.fetch(title);
 		return data.records[removeSpaces(removeAccents(title))].values;
 	}
-	async getEmbeddings(titles: string[]) {
+	async getEmbeddings(titles: string[]): Promise<number[][]> {
 		const data = await this.fetchMultiple(titles);
-		const result = data.map((e) => e.records[Object.keys(e.records)[0]].values);
+		const result = data.map(
+			(e) => e.records[Object.keys(e.records)[0]].values as number[]
+		);
 		return result;
 	}
-	async delete(title: string) {
+	async delete(title: string): Promise<void> {
 		cache.delete(title);
 		await this.index
 			.namespace(process.env.PINECONE_NAMESPACE)
 			.deleteOne(removeSpaces(removeAccents(title)));
 	}
-	async updateBook(titleinput: string, Book: Book) {
-		await Promise.all([this.delete(titleinput), this.insertBook(Book)]);
+	async updateBook(titleinput: string, Book: Book): Promise<void> {
+		await this.delete(titleinput);
+		await this.insertBook(Book);
 	}
 	async similarBooks(
 		book: Book,
@@ -114,16 +129,20 @@ export class PineconeManager {
 			filter: {
 				titulo: { $nin: excludedTitles.concat([book.Titulo]) },
 			},
+			vector: [],
 		});
-		return similarTitles.matches.map((e) => e.metadata.titulo);
+		return similarTitles.matches.map((e) => e.metadata.titulo as string);
 	}
-	async getBooksNameAutocomplete(title: string, limit: number = 25) {
-		const titles = (
-			await this.query(title, {
-				topK: limit,
-				includeMetadata: true,
-			})
-		).matches.map((e) => e.metadata.titulo as string);
+	async getBooksNameAutocomplete(
+		title: string,
+		limit: number = 25
+	): Promise<string[]> {
+		const results = await this.query(title, {
+			topK: limit,
+			includeMetadata: true,
+			vector: [],
+		});
+		const titles = results.matches.map((e) => e.metadata.titulo as string);
 		return titles;
 	}
 }

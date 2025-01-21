@@ -10,6 +10,7 @@ import { bookembed, getInputById, getInputByTitle } from "../utils";
 import { AutoEncoder, Recommender } from "../ai";
 import tf from "@tensorflow/tfjs-node";
 import { BookManager, ListManager } from "../managers";
+import { recomiendameInteligenteCache } from "../caches";
 
 const comando: Command = {
 	data: new SlashCommandBuilder()
@@ -94,45 +95,63 @@ async function similares(interaction: CommandInteraction) {
 }
 
 async function inteligente(interaction: CommandInteraction) {
-	const [autoencoder, recommender] = await Promise.all([
-		AutoEncoder.getInstance(),
-		Recommender.getInstance(),
-	]);
 	const id = interaction.user.id;
-	const datosEncoder = await getInputById(id);
-	const reshapedDatos = datosEncoder.reshape([1, 3072]);
-	const encodedPromise = autoencoder.encode(reshapedDatos);
-	datosEncoder.dispose();
-	const [leidos, leyendo, planeandoleer] = await Promise.all([
-		ListManager.getInstance().getList(id, 0),
-		ListManager.getInstance().getList(id, 1),
-		ListManager.getInstance().getList(id, 2),
-	]);
-	const filtros = [...leidos, ...leyendo, ...planeandoleer];
-	let todos = await BookManager.getInstance().getAllBooks();
-	todos = todos.filter((book) => !filtros.includes(book));
+	const resultCache = await recomiendameInteligenteCache
+		.getInstance()
+		.getNotas(id);
 	const posibles = [];
-	const encoded = ((await encodedPromise) as tf.Tensor).reshape([194]);
-	reshapedDatos.dispose();
-	for (const book of todos) {
-		const libro = await getInputByTitle(book);
-		const entrada = tf.concat([libro, encoded]);
-		const reshapedEntrada = entrada.reshape([1, 1218]);
-		const salida = (await recommender.predict(reshapedEntrada)) as tf.Tensor;
-		const notaPredecida = salida.dataSync()[0];
-		salida.dispose();
-		reshapedEntrada.dispose();
-		entrada.dispose();
-		libro.dispose();
-		posibles.push({ libro: book, nota: notaPredecida });
+	let posiblesOrdenados;
+	if (!resultCache) {
+		const [autoencoder, recommender] = await Promise.all([
+			AutoEncoder.getInstance(),
+			Recommender.getInstance(),
+		]);
+		const datosEncoder = await getInputById(id);
+		const reshapedDatos = datosEncoder.reshape([1, 3072]);
+		const encodedPromise = autoencoder.encode(reshapedDatos);
+		datosEncoder.dispose();
+		const [leidos, leyendo, planeandoleer] = await Promise.all([
+			ListManager.getInstance().getList(id, 0),
+			ListManager.getInstance().getList(id, 1),
+			ListManager.getInstance().getList(id, 2),
+		]);
+		const filtros = [...leidos, ...leyendo, ...planeandoleer];
+		let todos = await BookManager.getInstance().getAllBooks();
+		todos = todos.filter((book) => !filtros.includes(book));
+		const encoded = ((await encodedPromise) as tf.Tensor).reshape([194]);
+		reshapedDatos.dispose();
+		for (const book of todos) {
+			const libro = await getInputByTitle(book);
+			const entrada = tf.concat([libro, encoded]);
+			const reshapedEntrada = entrada.reshape([1, 1218]);
+			const salida = (await recommender.predict(reshapedEntrada)) as tf.Tensor;
+			const notaPredecida = salida.dataSync()[0];
+			salida.dispose();
+			reshapedEntrada.dispose();
+			entrada.dispose();
+			libro.dispose();
+			posibles.push({ libro: book, nota: notaPredecida });
+		}
+		encoded.dispose();
+		if (posibles.length == 0) {
+			await similares(interaction);
+			return;
+		}
+		posiblesOrdenados = posibles.sort((a, b) => b.nota - a.nota);
+		recomiendameInteligenteCache.getInstance().setNotas(id, posiblesOrdenados);
+	} else {
+		posiblesOrdenados = resultCache;
 	}
-	encoded.dispose();
-	if (posibles.length == 0) {
-		await similares(interaction);
-		return;
+	const aleatorio = Math.random() <= 0.8;
+	let datos: { libro: string; nota: number };
+	if (aleatorio) {
+		datos =
+			posiblesOrdenados[
+				Math.floor((Math.random() * posiblesOrdenados.length) / 2)
+			];
+	} else {
+		datos = posiblesOrdenados[0];
 	}
-	const posiblesOrdenados = posibles.sort((a, b) => b.nota - a.nota);
-	const datos = posiblesOrdenados[0];
 	const book = await BookManager.getInstance().getBookByTitle(datos.libro);
 	const imageBuffer = Buffer.from(book.Imagen);
 	const attachment = new AttachmentBuilder(imageBuffer, {
