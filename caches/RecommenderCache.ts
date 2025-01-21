@@ -1,6 +1,6 @@
 import { LRUCache } from "./base_caches/LRUCache";
 import { maxCacheSize } from "../config.json";
-import tf from "@tensorflow/tfjs-node";
+import tf, { Rank } from "@tensorflow/tfjs-node";
 
 export class RecommenderCache {
 	private static instance: RecommenderCache;

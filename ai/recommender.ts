@@ -1,4 +1,5 @@
-import tf from "@tensorflow/tfjs-node";
+import tf, { Rank } from "@tensorflow/tfjs-node";
+import { RecommenderCache } from "../caches";
 
 class Recommender {
 	private capas: Array<number>;
@@ -42,8 +43,12 @@ class Recommender {
 			epochs: 100,
 		});
 	}
-	async predict(data: tf.Tensor) {
-		return this.modelo.predict(data);
+	async predict(data: tf.Tensor): Promise<tf.Tensor<Rank> | tf.Tensor<Rank>[]> {
+		const cache = RecommenderCache.getInstance().getPredict(data);
+		if (cache) return cache;
+		const prediction = this.modelo.predict(data);
+		RecommenderCache.getInstance().savePredict(data, prediction as tf.Tensor);
+		return prediction;
 	}
 	async saveModel(path: string) {
 		await this.modelo.save(`file://${path}`);
