@@ -6,11 +6,8 @@ import {
 	StringSelectMenuInteraction,
 } from "discord.js";
 
-import fs from "fs";
-import path from "path";
+import commands from "../commands";
 import { Command } from "../types.js";
-
-const commandsPath = path.join(__dirname, "..", "commands");
 
 export class SlashManager {
 	private static instance: SlashManager;
@@ -77,22 +74,9 @@ export class SlashManager {
 	public getCommand(name: string): Command | undefined {
 		return this.commands.get(name);
 	}
-	public reloadCommand(name: string) {
-		const commandFiles = fs
-			.readdirSync(commandsPath)
-			.filter((file) => file == `${name}.ts`);
-		for (const file of commandFiles) {
-			delete require.cache[require.resolve(path.join(commandsPath, file))];
-			const command = require(path.join(commandsPath, file)).default;
-			this.commands.set(command.data.name, command);
-		}
-	}
 	private loadCommands() {
-		const commandFiles = fs
-			.readdirSync(commandsPath)
-			.filter((file) => file.endsWith(".ts"));
-		for (const file of commandFiles) {
-			const command = require(path.join(commandsPath, file)).default;
+		for (const commandName of Object.keys(commands)) {
+			const command = commands[commandName];
 			if (!command) return;
 			this.commands.set(command.data.name, command);
 		}

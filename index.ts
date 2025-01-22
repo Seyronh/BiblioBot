@@ -1,8 +1,6 @@
 import { Client, GatewayIntentBits } from "discord.js";
-import path from "path";
-import fs from "fs";
 import { SlashManager, BookEventManager } from "./managers";
-
+import events from "./events";
 class DiscordBot {
 	private client: Client;
 	static instance: DiscordBot;
@@ -28,14 +26,8 @@ class DiscordBot {
 		});
 	}
 	private loadEvents() {
-		const eventsPath = path.join(__dirname, "events");
-		const eventFiles = fs
-			.readdirSync(eventsPath)
-			.filter((file) => file.endsWith(".ts"));
-
-		for (const file of eventFiles) {
-			const filePath = path.join(eventsPath, file);
-			const event = require(filePath).default;
+		for (const eventName of Object.keys(events)) {
+			const event = events[eventName];
 			if (event.once) {
 				this.client.once(event.name, (...args) => event.execute(...args));
 			} else {
@@ -55,5 +47,4 @@ class DiscordBot {
 	}
 }
 DiscordBot.getInstance();
-
 export { DiscordBot };
