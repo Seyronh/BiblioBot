@@ -322,7 +322,7 @@ async function cambiarImagen(interaction: CommandInteraction, titulo: string) {
 	}
 
 	const response = await fetch(nuevaimagen.url);
-	const buffer = await response.arrayBuffer();
+	const buffer = new Uint8Array(await response.arrayBuffer());
 	await BookManager.getInstance().updateBookField(titulo, "Imagen", buffer);
 	await interaction.editReply({
 		content: `Imagen actualizada con exito`,
