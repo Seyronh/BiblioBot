@@ -5,7 +5,6 @@ import {
 	SqlCache,
 } from "../../caches";
 import { Book } from "../../types";
-import { arrayBufferToHex, hexToArrayBuffer } from "../../utils";
 import { PineconeManager } from "../Pinecone/PineconeManager";
 import { ListManager } from "./ListManager";
 
@@ -31,14 +30,14 @@ export class BookManager {
 	public async insertBook(book: Book): Promise<void> {
 		await Promise.all([
 			SQLConnection.getInstance().executeQuery<void>(
-				`INSERT INTO Libros (Titulo, Autor, Generos, Paginas, Sinopsis, Imagen) VALUES (?, ?, ?, ?, ?, ?)`,
+				`INSERT INTO Libros (Titulo, Autor, Generos, Paginas, Sinopsis, Imagen) VALUES (?1, ?2, ?3, ?4, ?5, ?6);`,
 				[
 					book.Titulo,
 					book.Autor,
-					book.Generos.split(","),
+					book.Generos,
 					book.Paginas,
 					book.Sinopsis,
-					arrayBufferToHex(book.Imagen),
+					book.Imagen,
 				]
 			),
 			PineconeManager.getInstance().insertBook(book),
@@ -51,12 +50,11 @@ export class BookManager {
 		const cache = SqlCache.getInstance().getBookByTitle(titleinput);
 		if (cache) return cache;
 		const books = await SQLConnection.getInstance().executeQuery<Book>(
-			`SELECT * FROM Libros WHERE Titulo = ?`,
+			`SELECT * FROM Libros WHERE Titulo = ?1;`,
 			[titleinput]
 		);
 		const book = books[0];
 		if (!book) return undefined;
-		book.Imagen = hexToArrayBuffer(book.Imagen);
 		SqlCache.getInstance().saveBookByTitle(titleinput, book);
 		return book;
 	}
@@ -70,11 +68,11 @@ export class BookManager {
 			throw new Error(`Book with title "${title}" not found in update.`);
 		}
 		book[field] = value;
-		const promesas = [
+		const promesas: Promise<void | void[]>[] = [
 			PineconeManager.getInstance().updateBook(title, book),
 			SQLConnection.getInstance().executeQuery<void>(
-				`UPDATE Libros SET ? = ? WHERE Titulo = ?`,
-				[field, value, title]
+				`UPDATE Libros SET ${field} = ? WHERE Titulo = ?;`,
+				[value, title]
 			),
 		];
 		if (field === "Titulo" && typeof value === "string") {
@@ -105,7 +103,7 @@ export class BookManager {
 		await Promise.all([
 			PineconeManager.getInstance().delete(title),
 			SQLConnection.getInstance().executeQuery<void>(
-				`DELETE FROM Libros WHERE Titulo = ?`,
+				`DELETE FROM Libros WHERE Titulo = ?1;`,
 				[title]
 			),
 			ListManager.getInstance().deleteBook(title),
@@ -115,13 +113,10 @@ export class BookManager {
 	}
 	public async randomBooks(samples: number): Promise<Book[]> {
 		const books = await SQLConnection.getInstance().executeQuery<Book>(
-			`SELECT * FROM Libros ORDER BY RANDOM() LIMIT ?`,
+			`SELECT * FROM Libros ORDER BY RANDOM() LIMIT ?1;`,
 			[samples]
 		);
-		return books.map((b) => {
-			b.Imagen = hexToArrayBuffer(b.Imagen);
-			return b;
-		});
+		return books;
 	}
 	public async getBooksNameAutocomplete(
 		title: string,
@@ -142,8 +137,8 @@ export class BookManager {
 			Titulo: string;
 		}>(
 			empty
-				? `SELECT Titulo FROM Libros WHERE Titulo LIKE ? ORDER BY Titulo ASC LIMIT 25`
-				: `SELECT Titulo FROM Libros ORDER BY Titulo ASC LIMIT 25`,
+				? `SELECT Titulo FROM Libros WHERE Titulo LIKE ?1 ORDER BY Titulo ASC LIMIT 25;`
+				: `SELECT Titulo FROM Libros ORDER BY Titulo ASC LIMIT 25;`,
 			empty ? [`%${title}%`] : []
 		);
 		const result = books.map((e) => {

@@ -222,7 +222,7 @@ async function handleModalSubmit(
 
 	const response = await fetch(image);
 
-	const buffer = await response.arrayBuffer();
+	const buffer = new Uint8Array(await response.arrayBuffer());
 
 	const book: Book = {
 		Titulo: title,
@@ -305,7 +305,7 @@ async function handleConfirmButton(interaction) {
 		const synopsis = Message.embeds[0].description;
 		const image = Message.embeds[0].image.url;
 		const response = await fetch(image);
-		const buffer = await response.arrayBuffer();
+		const buffer = new Uint8Array(await response.arrayBuffer());
 		const paginas = parseInt(Message.embeds[0].fields[1].value);
 
 		const book: Book = {

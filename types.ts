@@ -23,7 +23,7 @@ export type Book = {
 	Autor: string;
 	Generos: string;
 	Paginas: number;
-	Imagen?: ArrayBuffer;
+	Imagen?: Uint8Array;
 };
 
 export type Perms = {

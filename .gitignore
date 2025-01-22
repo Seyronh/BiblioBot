@@ -3,3 +3,4 @@ node_modules
 register.ts
 bun.lockb
 ecosystem.config.ts
+database.db
