@@ -4,7 +4,9 @@
 	"description": "",
 	"main": "index.ts",
 	"scripts": {
-		"start": "bun index.ts",
+		"build": "bun ./build.ts",
+		"start": "bun ./dist/index.js",
+		"dev": "bun run build && bun run start",
 		"test": "bun test",
 		"trainAutoencoder": "bun ai/trainautoencoder.ts",
 		"trainRecommender": "bun ai/trainrecommender.ts"
@@ -20,7 +22,8 @@
 	},
 	"devDependencies": {
 		"@types/bun": "^1.1.15",
-		"@types/node": "^22.10.2"
+		"@types/node": "^22.10.2",
+		"node-gyp": "^11.0.0"
 	},
 	"trustedDependencies": [
 		"core-js"
