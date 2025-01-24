@@ -15,8 +15,15 @@ mock.module("discord.js", async () => {
 				tag: "test",
 			};
 			login() {
-				this.emit("ready");
+				this.emit("ready", this);
 			}
+			channels = {
+				fetch: async () => {
+					return {
+						send: async () => {},
+					};
+				},
+			};
 		},
 	};
 });

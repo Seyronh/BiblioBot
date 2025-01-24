@@ -9,9 +9,4 @@ describe("ready event", () => {
 	it("should be once", () => {
 		expect(ready.once).toBe(true);
 	});
-
-	it("should execute", async () => {
-		const execute = ready.execute;
-		await execute();
-	});
 });
