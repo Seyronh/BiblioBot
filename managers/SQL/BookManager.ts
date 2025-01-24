@@ -85,7 +85,7 @@ export class BookManager {
 		SqlCache.getInstance().updateCachesDelete(title);
 		BookEventManager.getInstance().eventBook(
 			book,
-			`Se ha actualizado el libro: ${title} con el campo ${field} a ${value}`
+			`Se ha actualizado el campo: ${field} del libro: ${title}`
 		);
 		return;
 	}
