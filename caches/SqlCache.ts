@@ -161,7 +161,7 @@ export class SqlCache {
 
 	updateCachesDelete(title: string): void {
 		this.bookbytitle.delete(title);
-		this.booksnameautocomplete.delete(title);
+		this.booksnameautocomplete = new LRUCache(maxCacheSize);
 		this.exitsbook.delete(title);
 		this.notaMedia.delete(title);
 		this.existslistBook.deleteAll(new RegExp(`\\|${title}$`));
