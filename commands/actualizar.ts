@@ -7,9 +7,13 @@ import {
 	CommandInteraction,
 	CommandInteractionOptionResolver,
 	MessageFlags,
+	ModalActionRowComponentBuilder,
+	ModalBuilder,
 	SlashCommandBuilder,
 	StringSelectMenuBuilder,
 	StringSelectMenuInteraction,
+	TextInputBuilder,
+	TextInputStyle,
 } from "discord.js";
 import { Command, Roles } from "../types";
 
@@ -91,12 +95,6 @@ const comando: Command = {
 						.setRequired(true)
 						.setAutocomplete(true)
 				)
-				.addStringOption((option) =>
-					option
-						.setName("nuevasinopsis")
-						.setDescription("La nueva sinopsis del libro")
-						.setRequired(true)
-				)
 		)
 		.addSubcommand((subcommand) =>
 			subcommand
@@ -129,7 +127,6 @@ const comando: Command = {
 				)
 		) as SlashCommandBuilder,
 	execute: async (interaction) => {
-		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 		if (!hasRole(interaction, Roles.Moderador)) {
 			await interaction.editReply({
 				content: "No tienes permiso para usar este comando",
@@ -149,21 +146,26 @@ const comando: Command = {
 		}
 		switch (subcommand) {
 			case "titulo":
+				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 				await cambiarTitulo(interaction, titulo);
 				break;
 			case "autor":
+				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 				await cambiarAutor(interaction, titulo);
 				break;
 			case "sinopsis":
 				await cambiarSinopsis(interaction, titulo);
 				break;
 			case "paginas":
+				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 				await cambiarPaginas(interaction, titulo);
 				break;
 			case "imagen":
+				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 				await cambiarImagen(interaction, titulo);
 				break;
 			case "generos":
+				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 				await cambiarGeneros(interaction, titulo);
 				break;
 			default:
@@ -254,27 +256,55 @@ async function cambiarAutor(interaction: CommandInteraction, titulo: string) {
 		content: `Autor actualizado con exito`,
 	});
 }
+function createModal() {
+	const modal = new ModalBuilder()
+		.setTitle("Actualizar libro")
+		.setCustomId("actualizarLibroModal");
+	const sinopsis = new TextInputBuilder()
+		.setCustomId("sinopsis")
+		.setLabel("Sinopsis")
+		.setStyle(TextInputStyle.Paragraph)
+		.setRequired(true)
+		.setPlaceholder("La sinopsis del libro");
+	const secondRow =
+		new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
+			sinopsis
+		);
+	modal.addComponents(secondRow);
+	return modal;
+}
 async function cambiarSinopsis(
 	interaction: CommandInteraction,
 	titulo: string
 ) {
-	const interactionOptions =
-		interaction.options as CommandInteractionOptionResolver;
-	const nuevasinopsis = interactionOptions.getString("nuevasinopsis");
-	if (!nuevasinopsis && nuevasinopsis.trim().length == 0) {
-		await interaction.editReply({
-			content: `La nueva sinopsis no puede ser vacia`,
+	const modal = createModal();
+	await interaction.showModal(modal);
+	const collectorFilter = (i) => {
+		return i.user.id === interaction.user.id;
+	};
+	interaction
+		.awaitModalSubmit({ time: 600_000, filter: collectorFilter })
+		.then(async (interaction2) => {
+			await interaction2.deferReply({ flags: MessageFlags.Ephemeral });
+			const sinopsis = interaction2.fields.getTextInputValue("sinopsis");
+			if (!sinopsis && sinopsis.trim().length == 0) {
+				await interaction2.editReply({
+					content: `La nueva sinopsis no puede ser vacia`,
+				});
+				return;
+			}
+			await BookManager.getInstance().updateBookField(
+				titulo,
+				"Sinopsis",
+				sinopsis
+			);
+			await interaction2.editReply({
+				content: `Sinopsis actualizada con exito`,
+			});
+		})
+		.catch((err) => {
+			console.log(err);
 		});
-		return;
-	}
-	await BookManager.getInstance().updateBookField(
-		titulo,
-		"Sinopsis",
-		nuevasinopsis
-	);
-	await interaction.editReply({
-		content: `Sinopsis actualizada con exito`,
-	});
 }
 async function cambiarPaginas(interaction: CommandInteraction, titulo: string) {
 	const interactionOptions =
