@@ -7,6 +7,7 @@ import {
 import { Book } from "../../types";
 import { PineconeManager } from "../Pinecone/PineconeManager";
 import { ListManager } from "./ListManager";
+import { BookEventManager } from "../BookEventManager";
 
 export class BookManager {
 	private static instance: BookManager;
@@ -82,6 +83,10 @@ export class BookManager {
 		recomiendameInteligenteCache.getInstance().resetAll();
 		getInputByIDCache.getInstance().resetAll();
 		SqlCache.getInstance().updateCachesDelete(title);
+		BookEventManager.getInstance().eventBook(
+			book,
+			`Se ha actualizado el libro: ${title} con el campo ${field} a ${value}`
+		);
 		return;
 	}
 	public async getSimilarBooks(
